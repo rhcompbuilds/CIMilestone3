@@ -21,5 +21,5 @@ from openTimes.views import opening_times
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("opens/", opening_times, name='open_times',)
+    path("swimming/opens/", opening_times, name='open_times',)
 ]
