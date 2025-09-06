@@ -1,0 +1,9 @@
+core.Microsoft*
+core.python*
+env.py
+__pycache__/
+*.pyc
+db.sqlite3
+node_modules/
+.github/
+cloudninary_python.txt
