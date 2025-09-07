@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 from .models import Session, Activity, DAY_CHOICES, OpeningHour
 from collections import defaultdict
@@ -13,6 +14,12 @@ from collections import defaultdict
 import json
 
  
+class OpenHours(generic.ListView):
+    queryset = OpeningHour.objects.all().order_by('day', 'open_time')
+    template_name = 'open_hours/open_hours.html'
+    paginate_by = 7
+
+
 def timetable_view(request):
     """
     Displays a timetable of all sessions.
