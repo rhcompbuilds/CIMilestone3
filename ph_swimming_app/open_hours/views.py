@@ -81,8 +81,7 @@ def add_session(request):
 
 def get_timetable_data(request):
     """
-    Retrieves all timetable sessions and returns them as a JSON response.
-    This is called by the JavaScript to dynamically update the timetable.
+    Retrieves all timetable sessions and returns them as a JSON response.    
     """
     sessions = Session.objects.select_related('activity').all().order_by('session_day', 'start_time')
     
@@ -91,14 +90,12 @@ def get_timetable_data(request):
     
     timetable_data = defaultdict(dict)
     
-    # Use your DAY_CHOICES for consistency
     day_map = dict(DAY_CHOICES)
     
     for session in sessions:
         day_display = day_map.get(session.session_day, 'Unknown Day')
         time_slot = session.start_time.strftime('%H:%M')
         
-        # Ensure the activity field exists before trying to access it
         activity_name = session.activity.activity_name if session.activity else 'N/A'
         
         timetable_data[day_display][time_slot] = {
