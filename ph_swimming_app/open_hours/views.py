@@ -1,180 +1,108 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.http import JsonResponse
 from django.views import generic
-from django.views.decorators.csrf import csrf_exempt
-from .models import Session, Activity, DAY_CHOICES, OpeningHour
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from .models import Session, Activity, OpeningHour, TimetableSession, TimetableActivity, DAY_CHOICES
 from collections import defaultdict
-from django.utils import timezone
 import datetime
-from django.http import JsonResponse
-from .models import TimetableSession, TimetableActivity
-from collections import defaultdict
-import json
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
  
 class OpenHours(generic.ListView):
     queryset = OpeningHour.objects.all().order_by('day', 'open_time')
-    template_name = 'open_hours/open_hours.html'
+    template_name = 'timetable.html'
     paginate_by = 7
 
 
-def timetable_view(request):
+def show_timetable(request):
     """
-    Displays a timetable of all sessions.
-    Allows authenticated admin users to add new sessions.
+    Renders the main timetable page.
     """
-    timetable_slots = get_timetable_slots()
-
-    # Populate the timetable slots with existing sessions
-    existing_sessions = Session.objects.all().select_related('activity')
-    for session in existing_sessions:
-        day_display = session.get_session_day_display()
-        start_time_str = session.start_time.strftime('%H:%M')
-        if day_display in timetable_slots and start_time_str in timetable_slots[day_display]:
-            timetable_slots[day_display][start_time_str] = session
-
     activities = Activity.objects.all()
+    day_choices = DAY_CHOICES
     
-    if request.method == 'POST' and request.user.is_superuser:
-        try:
-            session_day = request.POST.get('session_day')
-            start_time_str = request.POST.get('start_time')
-            activity_id = request.POST.get('activity')
-            
-            # --- START VALIDATION LOGIC ---
-            valid_time_slot = False
-            opening_hours_for_day = OpeningHour.objects.filter(day=session_day)
-            submitted_time = datetime.datetime.strptime(start_time_str, '%H:%M').time()
-            
-            for oh in opening_hours_for_day:
-                if oh.open_time <= submitted_time < oh.close_time:
-                    valid_time_slot = True
-                    break
-            
-            if not valid_time_slot:
-                messages.error(request, f"Error: The selected time is outside of the valid opening hours for this day.")
-                return redirect('timetable_view')
-            # --- END VALIDATION LOGIC ---
-            
-            selected_activity = Activity.objects.get(pk=activity_id)
-            
-            new_session = Session.objects.create(
-                activity=selected_activity,
-                session_day=session_day,
-                start_time=submitted_time,
-                booked_number=0
-            )
-            
-            messages.success(request, f"Successfully added session for {selected_activity.activity_name} on {new_session.get_session_day_display()}.")
-            return redirect('timetable_view')
-
-        except (Activity.DoesNotExist, ValueError) as e:
-            messages.error(request, f"Error creating session: {e}")
-
     context = {
-        'timetable_slots': timetable_slots,
         'activities': activities,
-        'day_choices': DAY_CHOICES,
+        'day_choices': day_choices,
     }
-    return render(request, 'open_hours\\timetable.html', context)
+    return render(request, 'timetable.html', context)
 
-def get_timetable_slots():
-    """Generates a structured dictionary of hourly time slots for the timetable."""
-    time_slots = defaultdict(dict)
+@require_POST
+@login_required
+@csrf_exempt
+def add_session(request):
+    """
+    Handles the form submission for adding a new timetable session via AJAX.
+    Returns a JSON response to the JavaScript.
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'message': 'You do not have permission to perform this action.'}, status=403)
     
-    opening_hours = OpeningHour.objects.all()
-    
-    for oh in opening_hours:
-        current_time = datetime.datetime.combine(datetime.date.min, oh.open_time)
-        close_time = datetime.datetime.combine(datetime.date.min, oh.close_time)
+    try:
+        session_day = request.POST.get('session_day')
+        start_time_str = request.POST.get('start_time')
+        activity_id = request.POST.get('activity')
         
-        while current_time < close_time:
-            time_slot = current_time.time()
-            time_slots[oh.get_day_display()][time_slot.strftime('%H:%M')] = None
-            current_time += datetime.timedelta(hours=1)
+        if not all([session_day, start_time_str, activity_id]):
+            return JsonResponse({'success': False, 'message': 'All fields are required.'}, status=400)
             
-    return time_slots
+        # --- START VALIDATION LOGIC from your existing code ---
+        valid_time_slot = False
+        opening_hours_for_day = OpeningHour.objects.filter(day=session_day)
+        submitted_time = datetime.datetime.strptime(start_time_str, '%H:%M').time()
+        
+        for oh in opening_hours_for_day:
+            if oh.open_time <= submitted_time < oh.close_time:
+                valid_time_slot = True
+                break
+        
+        if not valid_time_slot:
+            return JsonResponse({'success': False, 'message': "Error: The selected time is outside of the valid opening hours for this day."}, status=400)
+        # --- END VALIDATION LOGIC ---
+        
+        selected_activity = Activity.objects.get(pk=activity_id)
+        
+        # Create and save the new session using your models
+        Session.objects.create(
+            activity=selected_activity,
+            session_day=session_day,
+            start_time=submitted_time,
+            booked_number=0 # Assuming this field is required
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Session added successfully!'})
+    
+    except Activity.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Invalid activity selected.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'An error occurred: {e}'}, status=500)
 
 def get_timetable_data(request):
     """
     Retrieves all timetable sessions and returns them as a JSON response.
+    This is called by the JavaScript to dynamically update the timetable.
     """
-    sessions = TimetableSession.objects.select_related('activity').all().order_by('day', 'start_time')
+    sessions = Session.objects.select_related('activity').all().order_by('session_day', 'start_time')
+    
+    # This line will help you debug. Check your Django console for the count.
+    print(f"Number of sessions retrieved: {len(sessions)}")
     
     timetable_data = defaultdict(dict)
     
-    # Django's TimetableSession model has a 'day' field, e.g., 'mon'
-    # We need to map this to a display name.
-    day_map = {
-        'mon': 'Monday',
-        'tue': 'Tuesday',
-        'wed': 'Wednesday',
-        'thu': 'Thursday',
-        'fri': 'Friday',
-        'sat': 'Saturday',
-        'sun': 'Sunday',
-    }
+    # Use your DAY_CHOICES for consistency
+    day_map = dict(DAY_CHOICES)
     
     for session in sessions:
-        day_display = day_map.get(session.day, 'Unknown Day')
-        time_slot = session.start_time.strftime('%I:%M %p') # Format time, e.g., 09:00 AM
+        day_display = day_map.get(session.session_day, 'Unknown Day')
+        time_slot = session.start_time.strftime('%H:%M')
+        
+        # Ensure the activity field exists before trying to access it
+        activity_name = session.activity.activity_name if session.activity else 'N/A'
         
         timetable_data[day_display][time_slot] = {
-            'activity_name': session.activity.activity_name
+            'activity_name': activity_name
         }
     
     return JsonResponse(timetable_data)
-
-@login_required
-def session_setup_view(request):
-    """
-    Displays the interactive timetable for session setup.
-    Generates hourly slots and shows existing sessions.
-    """
-    if not request.user.is_superuser:
-        messages.error(request, "You do not have permission to access this page.")
-        return redirect('timetable_view')
-
-    timetable_slots = get_timetable_slots()
-    
-    existing_sessions = Session.objects.all().select_related('activity')
-    for session in existing_sessions:
-        day_display = session.get_session_day_display()
-        start_time_str = session.start_time.strftime('%H:%M')
-        if start_time_str in timetable_slots[day_display]:
-            timetable_slots[day_display][start_time_str] = session
-
-    context = {
-        'day_choices': DAY_CHOICES,
-        'activities': Activity.objects.all(),
-        'timetable_slots': timetable_slots,
-    }
-    return render(request, 'session_setup.html', context)
-
-@csrf_exempt
-@login_required
-def update_session_activity(request):
-    """
-    Handles POST requests to update a session with a new activity.
-    """
-    if request.method == 'POST' and request.user.is_superuser:
-        session_id = request.POST.get('session_id')
-        activity_id = request.POST.get('activity_id')
-        
-        try:
-            session = Session.objects.get(pk=session_id)
-            if activity_id and activity_id != 'null':
-                activity = Activity.objects.get(pk=activity_id)
-                session.activity = activity
-            else:
-                session.activity = None
-
-            session.save()
-            return JsonResponse({'status': 'success', 'message': 'Session updated successfully.'})
-
-        except (Session.DoesNotExist, Activity.DoesNotExist) as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    return JsonResponse({'status': 'error', 'message': 'Invalid request.'}, status=405)
