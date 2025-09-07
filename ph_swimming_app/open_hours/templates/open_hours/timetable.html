@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Timetable{% endblock %}
+
+{% block content %}
+    {% if request.user.is_superuser %}
+        <div class="message-container">
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}-message"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <h2>Add a New Session</h2>
+        <form id="add-session-form" method="post">
+            {% csrf_token %}
+            <label for="session_day">Day:</label>
+            <select name="session_day" id="session_day">
+                {% for day, day_display in day_choices %}
+                    <option value="{{ day }}">{{ day_display }}</option>
+                {% endfor %}
+            </select>
+            
+            <label for="start_time">Start Time:</label>
+            <input type="time" name="start_time" id="start_time" required>
+            
+            <label for="activity">Activity:</label>
+            <select name="activity" id="activity">
+                {% for activity in activities %}
+                    <option value="{{ activity.id }}">{{ activity.activity_name }}</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit">Add Session</button>
+        </form>
+        <hr>
+    {% endif %}
+
+    <h2>Timetable</h2>
+    <div id="timetable-container">
+        <!-- Timetable will be dynamically loaded here -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const timetableContainer = document.getElementById('timetable-container');
+            const addSessionForm = document.getElementById('add-session-form');
+
+            const fetchAndRenderTimetable = async () => {
+                try {
+                    const response = await fetch('/api/timetable-data/', {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    renderTimetable(data);
+                } catch (error) {
+                    console.error('Failed to fetch timetable data:', error);
+                    timetableContainer.innerHTML = '<p class="error-message">Failed to load timetable. Please try again later.</p>';
+                }
+            };
+
+            const renderTimetable = (timetableData) => {
+                let html = `
+                    <table class="timetable">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Time Slot</th>
+                                <th>Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                
+                dayOrder.forEach(day => {
+                    html += `
+                        <tr>
+                            <td colspan="3" class="day-header">${day}</td>
+                        </tr>
+                    `;
+                    if (timetableData[day]) {
+                        for (const timeSlot in timetableData[day]) {
+                            const session = timetableData[day][timeSlot];
+                            html += `
+                                <tr>
+                                    <td></td>
+                                    <td>${timeSlot}</td>
+                                    <td>${session ? session.activity_name : 'No activity scheduled'}</td>
+                                </tr>
+                            `;
+                        }
+                    } else {
+                        html += `
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td>No sessions scheduled for this day</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                timetableContainer.innerHTML = html;
+            };
+
+            if (addSessionForm) {
+                addSessionForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const formData = new FormData(addSessionForm);
+                    
+                    try {
+                        const response = await fetch(addSessionForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        // Re-fetch the data to update the table after successful form submission
+                        await fetchAndRenderTimetable();
+
+                    } catch (error) {
+                        console.error('Failed to add new session:', error);
+                    }
+                });
+            }
+
+            // Fetch and render the timetable on initial page load
+            fetchAndRenderTimetable();
+
+            // Refresh the timetable every 60 seconds
+            setInterval(fetchAndRenderTimetable, 60000);
+        });
+    </script>
+{% endblock %}

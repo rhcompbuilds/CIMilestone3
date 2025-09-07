@@ -16,9 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from open_hours.views import opening_hour
+
 
 urlpatterns = [
+    path("", include('open_hours.urls')),
     path('admin/', admin.site.urls),
-    path('hours/', opening_hour, name='open_hours'),
 ]

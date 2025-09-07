@@ -1,0 +1,8 @@
+body { font-family: sans-serif; margin: 20px; }
+        .timetable { width: 100%; border-collapse: collapse; }
+        .timetable th, .timetable td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .timetable th { background-color: #f2f2f2; }
+        .message-container { margin-bottom: 20px; }
+        .success-message { color: green; }
+        .error-message { color: red; }
+        .day-header { font-weight: bold; background-color: #f9f9f9; }

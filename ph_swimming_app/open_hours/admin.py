@@ -1,7 +1,6 @@
 from django.contrib import admin
-from .models import OpeningHour
-from .models import Activity
-from .models import Session
+from .models import OpeningHour, Activity, Session
+
 
 # Register your models here.
 admin.site.register(OpeningHour)
