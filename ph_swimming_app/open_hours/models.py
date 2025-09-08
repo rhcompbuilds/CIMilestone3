@@ -17,6 +17,12 @@ DURATION_CHOICE = [
     ('02:00', '2 hours')
 ]
 
+SESSION_CHOICE = [
+    ('09:00', '09:00'), ('10:00', '10:00'), ('11:00', '11:00'),
+    ('12:00', '12:00'), ('14:00', '14:00'), ('15:00', '15:00'), 
+    ('16:00', '16:00'), ('17:00', '17:00')
+]
+
 class OpeningHour(models.Model):
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
     open_time = models.TimeField()
@@ -27,8 +33,6 @@ class OpeningHour(models.Model):
 
     class Meta:        
         pass
-
-
 
 class Activity(models.Model):
     activity_name = models.CharField(max_length=100)
@@ -43,44 +47,22 @@ class Activity(models.Model):
     class Meta:
         verbose_name_plural = "activities"
 
-
-
 class Session(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, null=True, blank=True)
     session_day = models.CharField(max_length=10, choices=DAY_CHOICES, default='Monday')
-    start_time = models.TimeField()
+    start_time = models.CharField(max_length=5, choices=SESSION_CHOICE)
     booked_number = models.IntegerField(default=0)
 
     @property
     def end_time(self):
-        
         if self.activity:
-            start_datetime = datetime.combine(timezone.now().date(), self.start_time)
+            # Convert the string start_time back to a datetime.time object
+            start_time_obj = datetime.strptime(self.start_time, '%H:%M').time()
+            start_datetime = datetime.combine(timezone.now().date(), start_time_obj)
             end_datetime = start_datetime + self.activity.duration
             return end_datetime.time()
         return None
 
     def __str__(self):
         activity_name = self.activity.activity_name if self.activity else "No Activity"
-        return f"{activity_name} on {self.get_session_day_display()} starting at {self.start_time.strftime('%H:%M')}"
-    
-
-class TimetableActivity(models.Model):
-    """
-    Represents a type of activity on the timetable, e.g., 'Free Swimming', 'Lane Swim'.
-    """
-    activity_name = models.CharField(max_length=100)
-    
-    def __str__(self):
-        return self.activity_name
-
-class TimetableSession(models.Model):
-    """
-    Represents a single session on the timetable.
-    """
-    day = models.CharField(max_length=3, choices=DAY_CHOICES)
-    start_time = models.TimeField()
-    activity = models.ForeignKey(TimetableActivity, on_delete=models.CASCADE)
-    
-    def __str__(self):
-        return f"{self.activity} on {self.get_day_display()} at {self.start_time}"
+        return f"{activity_name} on {self.get_session_day_display()} starting at {self.start_time}"

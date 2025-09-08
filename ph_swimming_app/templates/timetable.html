@@ -1,156 +1,78 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+{% load dict_extras %}
 
 {% block title %}Timetable{% endblock %}
 
 {% block content %}
-    {% if request.user.is_superuser %}
-        <div class="message-container">
-            {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}-message"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        
-        <h2>Add a New Session</h2>
-        <form id="add-session-form" method="post">
-            {% csrf_token %}
-            <label for="session_day">Day:</label>
-            <select name="session_day" id="session_day">
-                {% for day, day_display in day_choices %}
-                    <option value="{{ day }}">{{ day_display }}</option>
-                {% endfor %}
-            </select>
-            
-            <label for="start_time">Start Time:</label>
-            <input type="time" name="start_time" id="start_time" required>
-            
-            <label for="activity">Activity:</label>
-            <select name="activity" id="activity">
-                {% for activity in activities %}
-                    <option value="{{ activity.id }}">{{ activity.activity_name }}</option>
-                {% endfor %}
-            </select>
-            
-            <button type="submit">Add Session</button>
-        </form>
-        <hr>
-    {% endif %}
 
-    <h2>Timetable</h2>
-    <div id="timetable-container">
-        <!-- Timetable will be dynamically loaded here -->
-    </div>
+<div class="navigation">
+  <button id="prevBtn">Previous Day</button>
+  <button id="nextBtn">Next Day</button>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const timetableContainer = document.getElementById('timetable-container');
-            const addSessionForm = document.getElementById('add-session-form');
+{% for day_code, day_label in day_choices %}
+<div class="day-page" data-day-index="{{ forloop.counter0 }}" {% if not forloop.first %}style="display:none;"{% endif %}>
+  <h2>{{ day_label }}</h2>
+  <table class="timetable" data-day="{{ day_code }}">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Activity</th>
+        {% if user.is_superuser %}<th>Assign</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% with day_slots=timetable_slots|get_item:day_label %}
+      {% for time, _ in session_choices %}
+      {% with session=day_slots|get_item:time %}
+      <tr>
+        <td>{{ time }}</td>
+        <td data-time="{{ time }}">
+          {% if session.activity %}
+            {{ session.activity.activity_name }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        {% if user.is_superuser %}
+        <td>
+          <button 
+            class="add-activity-btn" 
+            data-day="{{ day_code }}" 
+            data-time="{{ time }}">
+            Add Activity
+          </button>
+        </td>
+        {% endif %}
+      </tr>
+      {% endwith %}
+      {% endfor %}
+      {% endwith %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
 
-            const fetchAndRenderTimetable = async () => {
-                try {
-                    const response = await fetch('/api/timetable-data/', {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    renderTimetable(data);
-                } catch (error) {
-                    console.error('Failed to fetch timetable data:', error);
-                    timetableContainer.innerHTML = '<p class="error-message">Failed to load timetable. Please try again later.</p>';
-                }
-            };
+<!-- Activity Modal -->
+<div id="activityModal" class="modal">
+  <div class="modal-content">
+    <span id="closeModal" class="close">&times;</span>
+    <h3>Select Activity</h3>
+    <input type="hidden" id="modalDay">
+    <input type="hidden" id="modalTime">
+    <select id="activitySelect">
+      <option value="">-- Choose Activity --</option>
+      {% for activity in activities %}
+      <option value="{{ activity.id }}">{{ activity.activity_name }}</option>
+      {% endfor %}
+    </select>
+    <button id="assignActivityBtn">Assign Activity</button>
+  </div>
+</div>
 
-            const renderTimetable = (timetableData) => {
-                let html = `
-                    <table class="timetable">
-                        <thead>
-                            <tr>
-                                <th>Day</th>
-                                <th>Time Slot</th>
-                                <th>Activity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                
-                dayOrder.forEach(day => {
-                    html += `
-                        <tr>
-                            <td colspan="3" class="day-header">${day}</td>
-                        </tr>
-                    `;
-                    if (timetableData[day]) {
-                        for (const timeSlot in timetableData[day]) {
-                            const session = timetableData[day][timeSlot];
-                            html += `
-                                <tr>
-                                    <td></td>
-                                    <td>${timeSlot}</td>
-                                    <td>${session ? session.activity_name : 'No activity scheduled'}</td>
-                                </tr>
-                            `;
-                        }
-                    } else {
-                        html += `
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td>No sessions scheduled for this day</td>
-                            </tr>
-                        `;
-                    }
-                });
-                
-                html += `
-                        </tbody>
-                    </table>
-                `;
-                timetableContainer.innerHTML = html;
-            };
+{% endblock %}
 
-            if (addSessionForm) {
-                addSessionForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-
-                    const formData = new FormData(addSessionForm);
-                    
-                    try {
-                        const response = await fetch(addSessionForm.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                            }
-                        });
-
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-
-                        // Re-fetch the data to update the table after successful form submission
-                        await fetchAndRenderTimetable();
-
-                    } catch (error) {
-                        console.error('Failed to add new session:', error);
-                    }
-                });
-            }
-
-            // Fetch and render the timetable on initial page load
-            fetchAndRenderTimetable();
-
-            // Refresh the timetable every 60 seconds
-            setInterval(fetchAndRenderTimetable, 60000);
-        });
-    </script>
+{% block extra_js %}
+<script src="{% static 'js/livecontent.js' %}"></script>
 {% endblock %}
