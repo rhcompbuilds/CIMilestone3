@@ -6,11 +6,6 @@
 
 {% block content %}
 
-<div class="navigation">
-  <button id="prevBtn">Previous Day</button>
-  <button id="nextBtn">Next Day</button>
-</div>
-
 {% for day_code, day_label in day_choices %}
 <div class="day-page" data-day-index="{{ forloop.counter0 }}" {% if not forloop.first %}style="display:none;"{% endif %}>
   <h2>{{ day_label }}</h2>
@@ -51,6 +46,10 @@
       {% endwith %}
     </tbody>
   </table>
+  <div class="navigation">
+    <button id="prevBtn">Previous Day</button>
+    <button id="nextBtn">Next Day</button>
+  </div>
 </div>
 {% endfor %}
 
