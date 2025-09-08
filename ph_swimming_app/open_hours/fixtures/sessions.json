@@ -1,0 +1,41 @@
+[
+  {"model": "open_hours.session", "pk": 1, "fields": {"activity": null, "session_day": "Tue", "start_time": "09:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 2, "fields": {"activity": null, "session_day": "Tue", "start_time": "10:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 3, "fields": {"activity": null, "session_day": "Tue", "start_time": "11:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 4, "fields": {"activity": null, "session_day": "Tue", "start_time": "12:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 5, "fields": {"activity": null, "session_day": "Tue", "start_time": "14:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 6, "fields": {"activity": null, "session_day": "Tue", "start_time": "15:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 7, "fields": {"activity": null, "session_day": "Tue", "start_time": "16:00", "booked_number": 0}},
+
+  {"model": "open_hours.session", "pk": 8, "fields": {"activity": null, "session_day": "Wed", "start_time": "09:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 9, "fields": {"activity": null, "session_day": "Wed", "start_time": "10:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 10, "fields": {"activity": null, "session_day": "Wed", "start_time": "11:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 11, "fields": {"activity": null, "session_day": "Wed", "start_time": "12:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 12, "fields": {"activity": null, "session_day": "Wed", "start_time": "14:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 13, "fields": {"activity": null, "session_day": "Wed", "start_time": "15:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 14, "fields": {"activity": null, "session_day": "Wed", "start_time": "16:00", "booked_number": 0}},
+
+  {"model": "open_hours.session", "pk": 15, "fields": {"activity": null, "session_day": "Thu", "start_time": "09:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 16, "fields": {"activity": null, "session_day": "Thu", "start_time": "10:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 17, "fields": {"activity": null, "session_day": "Thu", "start_time": "11:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 18, "fields": {"activity": null, "session_day": "Thu", "start_time": "12:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 19, "fields": {"activity": null, "session_day": "Thu", "start_time": "14:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 20, "fields": {"activity": null, "session_day": "Thu", "start_time": "15:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 21, "fields": {"activity": null, "session_day": "Thu", "start_time": "16:00", "booked_number": 0}},
+
+  {"model": "open_hours.session", "pk": 22, "fields": {"activity": null, "session_day": "Fri", "start_time": "09:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 23, "fields": {"activity": null, "session_day": "Fri", "start_time": "10:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 24, "fields": {"activity": null, "session_day": "Fri", "start_time": "11:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 25, "fields": {"activity": null, "session_day": "Fri", "start_time": "12:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 26, "fields": {"activity": null, "session_day": "Fri", "start_time": "14:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 27, "fields": {"activity": null, "session_day": "Fri", "start_time": "15:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 28, "fields": {"activity": null, "session_day": "Fri", "start_time": "16:00", "booked_number": 0}},
+
+  {"model": "open_hours.session", "pk": 29, "fields": {"activity": null, "session_day": "Sat", "start_time": "09:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 30, "fields": {"activity": null, "session_day": "Sat", "start_time": "10:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 31, "fields": {"activity": null, "session_day": "Sat", "start_time": "11:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 32, "fields": {"activity": null, "session_day": "Sat", "start_time": "12:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 33, "fields": {"activity": null, "session_day": "Sat", "start_time": "14:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 34, "fields": {"activity": null, "session_day": "Sat", "start_time": "15:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 35, "fields": {"activity": null, "session_day": "Sat", "start_time": "16:00", "booked_number": 0}}
+]

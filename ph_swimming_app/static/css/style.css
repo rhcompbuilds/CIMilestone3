@@ -39,12 +39,29 @@ body {
     margin-bottom: 40px;
 }
 
+.navigation {
+    display: flex !important;                
+    justify-content: center;       
+    align-items: center !important;           
+    gap: 10px;                     
+    margin: 20px 0;                
+}
+
 .navigation button {
     padding: 10px 20px;
-    margin: 5px;
     font-size: 1rem;
     cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;    /* adjust color */
+    color: white;
+    transition: background-color 0.3s;
 }
+
+.navigation button:hover {
+    background-color: #0056b3;    /* hover effect */
+}
+
 
 /* Modal styles */
 .modal {
@@ -79,4 +96,17 @@ body {
 .close:hover, .close:focus {
     color: black;
     text-decoration: none;
+}
+
+.timetable-header {
+    height: 200px; /* adjust height */
+    background-image: url("{% static 'images/swimming.jpeg' %}");
+    background-size: cover;      /* cover the entire header */
+    background-position: center; /* center the image */
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
 }
