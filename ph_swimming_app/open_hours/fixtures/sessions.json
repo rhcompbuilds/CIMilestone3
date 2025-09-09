@@ -1,4 +1,13 @@
 [
+  {"model": "open_hours.session", "pk": 36, "fields": {"activity": null, "session_day": "Mon", "start_time": "09:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 37, "fields": {"activity": null, "session_day": "Mon", "start_time": "10:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 38, "fields": {"activity": null, "session_day": "Mon", "start_time": "11:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 39, "fields": {"activity": null, "session_day": "Mon", "start_time": "12:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 40, "fields": {"activity": null, "session_day": "Mon", "start_time": "14:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 41, "fields": {"activity": null, "session_day": "Mon", "start_time": "15:00", "booked_number": 0}},
+  {"model": "open_hours.session", "pk": 42, "fields": {"activity": null, "session_day": "Mon", "start_time": "16:00", "booked_number": 0}},
+
+
   {"model": "open_hours.session", "pk": 1, "fields": {"activity": null, "session_day": "Tue", "start_time": "09:00", "booked_number": 0}},
   {"model": "open_hours.session", "pk": 2, "fields": {"activity": null, "session_day": "Tue", "start_time": "10:00", "booked_number": 0}},
   {"model": "open_hours.session", "pk": 3, "fields": {"activity": null, "session_day": "Tue", "start_time": "11:00", "booked_number": 0}},

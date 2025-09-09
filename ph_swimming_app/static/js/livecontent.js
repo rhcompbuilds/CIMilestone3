@@ -9,18 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.getElementById('prevBtn').addEventListener('click', () => {
+   document.querySelectorAll('.prevBtn').forEach(btn => { btn.addEventListener('click', () => {
         if (currentIndex > 0) {
             currentIndex--;
             showDay(currentIndex);
         }
+    })
     });
 
-    document.getElementById('nextBtn').addEventListener('click', () => {
+    document.querySelectorAll('.nextBtn').forEach(btn => { btn.addEventListener('click', () => {
         if (currentIndex < dayPages.length - 1) {
             currentIndex++;
             showDay(currentIndex);
         }
+    })
     });
 
     showDay(currentIndex);
@@ -47,6 +49,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('click', (e) => {
         if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // --- Use of Lunch time row ---
+    document.getElementById("assignActivityBtn").addEventListener("click", () => {
+    const day = document.getElementById("modalDay").value;
+    const time = document.getElementById("modalTime").value;
+    const activityId = document.getElementById("activitySelect").value;
+    const activityName = document.getElementById("activitySelect")
+                                .options[document.getElementById("activitySelect").selectedIndex].text;
+
+    // Find the table row for that time
+    const cell = document.querySelector(`table[data-day="${day}"] td[data-time="${time}"]`);
+    const row = cell.closest("tr");
+
+    // Update UI
+    cell.textContent = activityName;
+
+    // If activity is Lunch → grey out + remove button
+    if (activityName.toLowerCase() === "lunch") {
+        row.classList.add("lunch-row");
+        const btn = row.querySelector(".add-activity-btn");
+        if (btn) btn.remove();
+    }
+
+    // Close modal
+    document.getElementById("activityModal").style.display = "none";
     });
 
     // --- Assign activity via AJAX ---
