@@ -3,6 +3,13 @@ body {
     margin: 20px; 
 }
 
+.timetable-header { 
+    height: 140px;
+    background-image: url('../images/BSswimming.jpeg');
+    background-size: cover;
+    color: white;
+}   
+
 .timetable { 
     width: 100%; 
     border-collapse: collapse; 

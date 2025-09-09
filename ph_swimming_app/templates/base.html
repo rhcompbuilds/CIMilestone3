@@ -17,6 +17,7 @@
 <body>
     <header class="timetable-header">
         <h1>Swimming Bookings App</h1>
+    </header>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand">  </a>
@@ -47,12 +48,13 @@
             </div>
         </div>
     </nav>
-    </header>
+    <div class="image-placement">
     <main class="main-content">
         {% block content %}
         <!-- Content will be injected here by child templates -->
         {% endblock %}
     </main>
+    </div>
 
     <footer class="main-footer" mt-auto py-3 dark-bg>
         <p>&copy; 2025 PH Swimming. All rights reserved.</p>

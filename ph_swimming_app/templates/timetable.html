@@ -21,7 +21,7 @@
       {% with day_slots=timetable_slots|get_item:day_label %}
       {% for time, _ in session_choices %}
       {% with session=day_slots|get_item:time %}
-      <tr>
+      <tr {% if session.activity and session.activity.activity_name == 'Lunch' %}class="lunch-row"{% endif %}>
         <td>{{ time }}</td>
         <td data-time="{{ time }}">
           {% if session.activity %}
@@ -36,6 +36,7 @@
             class="add-activity-btn" 
             data-day="{{ day_code }}" 
             data-time="{{ time }}">
+            {% if session.activity and session.activity.activity_name == 'Lunch' %}hidden{% endif %}>
             Add Activity
           </button>
         </td>
