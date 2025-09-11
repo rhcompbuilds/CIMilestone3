@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}All Sessions{% endblock %}
+
+{% block content %}
+<h2>All Sessions Overview</h2>
+
+<!-- 🔍 Filter Form -->
+<form method="get" class="filter-form">
+  <label for="day">Filter by Day:</label>
+  <select name="day" id="day">
+    <option value="">All</option>
+    {% for code, label in session.day.field.choices %}
+      <option value="{{ code }}" {% if selected_day == code %}selected{% endif %}>
+        {{ label }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <label for="activity">Filter by Activity:</label>
+  <select name="activity" id="activity">
+    <option value="">All</option>
+    {% for activity in activities %}
+      <option value="{{ activity.id }}" {% if selected_activity == activity.id|stringformat:"s" %}selected{% endif %}>
+        {{ activity.activity_name }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Apply Filters</button>
+</form>
+
+<!-- 📊 Sessions Table -->
+<table>
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th>Time</th>
+      <th>Activity</th>
+      <th>Capacity</th>
+      <th>Booked</th>
+      <th>Available</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for session in sessions %}
+      <tr>
+        <td>{{ session.get_session_day_display }}</td>
+        <td>{{ session.start_time }} - {{ session.end_time|default:"TBD" }}</td>
+        <td>{{ session.activity.activity_name }}</td>
+        <td>{{ session.activity.max_number }}</td>
+        <td>{{ session.total_booked }}</td>
+        <td>{{ session.available_places }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">No sessions found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

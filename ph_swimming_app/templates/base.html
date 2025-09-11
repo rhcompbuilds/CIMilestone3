@@ -39,7 +39,12 @@
                     </li>
                      {% if user.is_staff %}
                     <li class="nav-item">
-                        <a class="nav-link" {% if request.path == staff_view_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_view_sessions' %}">Manage Bookings</a>
+                        <a class="nav-link" {% if request.path == staff_today_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_today_sessions' %}">Bookings for Today</a>
+                    </li>
+                        {% endif %}
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" {% if request.path == staff_all_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_all_sessions' %}">Weeks Bookings</a>
                     </li>
                         {% endif %}
                      {% if user.is_superuser %}

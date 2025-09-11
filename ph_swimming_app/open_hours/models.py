@@ -56,6 +56,12 @@ class Session(models.Model):
     booked_number = models.IntegerField(default=0)
 
     @property
+    def available_places(self):
+        if self.activity:
+            return self.activity.max_number - self.booked_number
+        return 0
+
+    @property
     def end_time(self):
         if self.activity:
             # Convert the string start_time back to a datetime.time object

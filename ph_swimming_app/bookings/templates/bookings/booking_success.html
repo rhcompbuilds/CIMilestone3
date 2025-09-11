@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Booking Successful{% endblock %}
+
+{% block content %}
+  <h2>🎉 Your booking was successful!</h2>
+  <p>We’ve reserved your session. A confirmation email will be sent shortly.</p>
+  <a href="{% url 'booking_home' %}">Bookings Home</a>
+{% endblock %}

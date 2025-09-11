@@ -3,14 +3,29 @@
 
 {% block content %}
   <h2>Make a Booking</h2>
-
-  {% if activity %}
-    <h3>Activity: {{ activity.activity_name }}</h3>
-    {% if activity.activity_image %}
-      <img src="{{ activity.activity_image.url }}" alt="{{ activity.activity_name }}" style="max-width:300px; border:2px solid #ccc; border-radius:8px;">
-    {% endif %}
-    <p>{{ activity.description }}</p>
+  {% if form.instance.session %}
+    {% with spots=form.instance.session.available_places %}
+      {% if spots <= 20 %}
+        <p style="color:red; font-weight:bold;">
+         Hurry! Only {{ spots }} places left for this session.
+        </p>
+      {% endif %}
+    {% endwith %}
   {% endif %}
+
+  <p>Please fill out the form below to book your session.</p>
+
+  {% comment %} Display activity details if available {% endcomment %}
+  {% with activity=form.instance.session.activity %}
+
+    {% if activity %}
+      <h3>Activity: {{ activity.activity_name }}</h3>
+      {% if activity.activity_image %}
+        <img src="{{ activity.activity_image.url }}" alt="{{ activity.activity_name }}" style="max-width:300px; border:2px solid #ccc; border-radius:8px;">
+      {% endif %}
+      <p>{{ activity.description }}</p>
+    {% endif %}
+  {% endwith %}
 
   <form method="post">
     {% csrf_token %}

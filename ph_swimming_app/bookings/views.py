@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.core import serializers
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
 from .models import Booking
 from open_hours.models import Activity, Session
 from .forms import GuestBookingForm
@@ -31,6 +32,16 @@ def make_booking(request):
         if form.is_valid():
             booking = form.save(commit=False)
             booking.session = session
+
+            if session.booked_number + booking.number_of_people > session.activity.max_number:
+                messages.error(request, "Sorry, this session is fully booked.")
+            else:
+                booking.save()
+                # update the session booked_number
+                session.booked_number += booking.number_of_people
+                session.save()
+                messages.success(request, "Booking confirmed!")
+                return redirect("booking_success")
             booking.save()
             return redirect("booking_success")
     else:
@@ -40,6 +51,10 @@ def make_booking(request):
         "form": form,
         "session": session,
     })
+
+
+def booking_success(request):
+    return render(request, "bookings/booking_success.html")
 
 def get_sessions(request, activity_id):
     """
@@ -53,7 +68,7 @@ def get_sessions(request, activity_id):
 
 
 @staff_member_required
-def staff_view_sessions(request):
+def staff_today_sessions(request):
     """
     Staff view to display a grid of today's sessions with booking counts.
     """
@@ -107,12 +122,35 @@ def session_bookings(request, session_id):
     })
 
 @staff_member_required
-def staff_create_booking(request):
-    if request.method == "POST":
-        form = StaffBookingForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("booking_list")  # or back to session management
-    else:
-        form = StaffBookingForm()
-    return render(request, "bookings/staff_create_booking.html", {"form": form})
+def staff_all_sessions(request):
+    """
+    Staff view to display ALL sessions with booking counts and filtering.
+    """
+    day_filter = request.GET.get("day")
+    activity_filter = request.GET.get("activity")
+
+    sessions = Session.objects.exclude(
+        activity__activity_name='Lunch'
+    ).annotate(
+        total_booked=Sum('booking__number_of_people')
+    ).order_by('session_day', 'start_time')
+
+    # Ensure total_booked is 0 if no bookings exist
+    for session in sessions:
+        if session.total_booked is None:
+            session.total_booked = 0
+
+    # Apply filters
+    if day_filter:
+        sessions = sessions.filter(session_day=day_filter)
+    if activity_filter:
+        sessions = sessions.filter(activity_id=activity_filter)
+
+    activities = Activity.objects.exclude(activity_name="Lunch")
+
+    return render(request, "bookings/staff_all_sessions.html", {
+        "sessions": sessions,
+        "activities": activities,
+        "selected_day": day_filter,
+        "selected_activity": activity_filter,
+    })
