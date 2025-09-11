@@ -13,9 +13,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Online Bookings App{% endblock %}</title>
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script src="{% static 'js/livecontent.js' %}"></script>
-    <script src="{% static 'js/booking_modal.js' %}"></script>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="{% static 'js/livecontent.js' %}" crossorigin="use-credentials"></script>
+    <script src="{% static 'js/booking_modal.js' %}" crossorigin="use-credentials"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     
 </head>
@@ -39,7 +39,7 @@
                     </li>
                      {% if user.is_staff %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'staff_view_sessions' %}">Manage Bookings</a>
+                        <a class="nav-link" {% if request.path == staff_view_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_view_sessions' %}">Manage Bookings</a>
                     </li>
                         {% endif %}
                      {% if user.is_superuser %}
