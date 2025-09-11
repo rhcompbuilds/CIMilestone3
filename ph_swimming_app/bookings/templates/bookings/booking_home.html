@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Guest Bookings{% endblock %}
+
+{% block content %}
+<h2>Select an Activity to Book</h2>
+
+<div class="activity-grid">
+  {% for activity in activities %}
+  <div class="activity-card" data-activity-id="{{ activity.id }}">
+    {% if activity.activity_image %}
+    <img src="{{ activity.activity_image.url }}" alt="{{ activity.activity_name }}">
+    {% endif %}
+    <h3>{{ activity.activity_name }}</h3>
+    <p>{{ activity.description }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<div id="sessionModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3>Available Sessions</h3>
+    <ul id="session-list">
+      </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/booking_modal.js' %}"></script>
+{% endblock %}

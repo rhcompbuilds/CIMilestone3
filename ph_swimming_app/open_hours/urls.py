@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     # Standard timetable view
-    path("", views.show_timetable, name='timetable'),
+    path("", views.show_timetable, name='home'),
     
     # Interactive drag-and-drop session setup view
     path("add_session/", views.add_session, name='add_session'),

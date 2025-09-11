@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Today's Sessions{% endblock %}
+
+{% block content %}
+<h2>Today's Sessions</h2>
+<div class="session-grid">
+  {% for session in today_sessions %}
+  <a href="{% url 'session_bookings' session_id=session.id %}" class="session-card">
+    <h3>{{ session.activity }}</h3>
+    <p>Time: {{ session.start_time }} - {{ session.end_time|date:"H:i" }}</p>
+    <p>Bookings: {{ session.total_booked }} / {{ session.activity.max_number }}</p>
+  </a>
+  {% empty %}
+    <p>No sessions scheduled for today.</p>
+  {% endfor %}
+</div>
+{% endblock %}

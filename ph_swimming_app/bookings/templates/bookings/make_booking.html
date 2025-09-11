@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Make a Booking{% endblock %}
+
+{% block content %}
+  <h2>Make a Booking</h2>
+
+  {% if activity %}
+    <h3>Activity: {{ activity.activity_name }}</h3>
+    {% if activity.activity_image %}
+      <img src="{{ activity.activity_image.url }}" alt="{{ activity.activity_name }}" style="max-width:300px; border:2px solid #ccc; border-radius:8px;">
+    {% endif %}
+    <p>{{ activity.description }}</p>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Booking</button>
+  </form>
+{% endblock %}

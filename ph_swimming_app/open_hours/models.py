@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta, datetime
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
 DAY_CHOICES = [
@@ -16,7 +17,7 @@ DURATION_CHOICE = [
     ('01:30', '1 hour 30 minutes'), 
     ('02:00', '2 hours')
 ]
-
+ 
 SESSION_CHOICE = [
     ('09:00', '09:00'), ('10:00', '10:00'), ('11:00', '11:00'),
     ('12:00', '12:00'), ('13:00', '13:00'), ('14:00', '14:00'), 
@@ -40,6 +41,7 @@ class Activity(models.Model):
     max_number = models.IntegerField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     duration = models.DurationField(default=timedelta(hours=1))
+    activity_image = CloudinaryField('image', default='placeholder')
 
     def __str__(self):
         return self.activity_name
