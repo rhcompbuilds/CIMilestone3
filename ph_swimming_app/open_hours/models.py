@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -53,13 +54,21 @@ class Session(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, null=True, blank=True)
     session_day = models.CharField(max_length=10, choices=DAY_CHOICES, default='Monday')
     start_time = models.CharField(max_length=5, choices=SESSION_CHOICE)
-    booked_number = models.IntegerField(default=0)
+    
+    @property
+    def people_booked(self):
+        return self.booking_set.aggregate(Sum('number_of_people'))['number_of_people__sum'] or 0
 
     @property
     def available_places(self):
         if self.activity:
-            return self.activity.max_number - self.booked_number
+            max_capacity = self.activity.max_number
+            return max_capacity - self.people_booked
         return 0
+    
+    @property
+    def is_full(self):
+        return self.available_places <= 0
 
     @property
     def end_time(self):

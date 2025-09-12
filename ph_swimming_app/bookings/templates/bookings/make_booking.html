@@ -1,35 +1,38 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Make a Booking{% endblock %}
 
 {% block content %}
   <h2>Make a Booking</h2>
-  {% if form.instance.session %}
-    {% with spots=form.instance.session.available_places %}
-      {% if spots <= 20 %}
-        <p style="color:red; font-weight:bold;">
-         Hurry! Only {{ spots }} places left for this session.
-        </p>
-      {% endif %}
-    {% endwith %}
+
+  {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
   {% endif %}
 
-  <p>Please fill out the form below to book your session.</p>
-
-  {% comment %} Display activity details if available {% endcomment %}
-  {% with activity=form.instance.session.activity %}
-
-    {% if activity %}
-      <h3>Activity: {{ activity.activity_name }}</h3>
-      {% if activity.activity_image %}
-        <img src="{{ activity.activity_image.url }}" alt="{{ activity.activity_name }}" style="max-width:300px; border:2px solid #ccc; border-radius:8px;">
-      {% endif %}
-      <p>{{ activity.description }}</p>
+  {% if session %}
+    <h3>Activity: {{ session.activity.activity_name }}</h3>
+    {% if session.activity.activity_image %}
+      <img src="{{ session.activity.activity_image.url }}" alt="{{ session.activity.activity_name }}" style="max-width:300px; border:2px solid #ccc; border-radius:8px;">
     {% endif %}
-  {% endwith %}
+    <p>Day: {{ session.session_day }} at {{ session.start_time }}</p>
+    
+    {% if session.is_full %}
+      <p style="color: red; font-weight: bold;">This session is fully booked. Please select another time.</p>
+    {% else %}
+      <p style="color: green; font-weight: bold;">Spaces Remaining: {{ session.spaces_remaining }}</p>
+      <p>{{ session.activity.description }}</p>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit Booking</button>
-  </form>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Booking</button>
+      </form>
+    {% endif %}
+  {% else %}
+    <p>No session selected. Please go back and choose a session to book.</p>
+  {% endif %}
 {% endblock %}

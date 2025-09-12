@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.core import serializers
+from django.core.exceptions import ValidationError
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from .models import Booking
@@ -10,7 +11,7 @@ from .forms import StaffBookingForm
 from django.db.models import Sum, F
 from datetime import date, timedelta
 
-
+""" Guest Views """
 def booking_home(request):
     """
     Displays a grid of available activities for a guest to select.
@@ -23,29 +24,36 @@ def booking_home(request):
 
 def make_booking(request):
     session_id = request.GET.get("session")
-    session = None
-    if session_id:
-        session = get_object_or_404(Session, pk=session_id)
-        
+    
+    if not session_id:
+        messages.error(request, "A valid session must be selected.")
+        return redirect('booking_home')
+
+    session = get_object_or_404(Session, pk=session_id)
+
+    # Check if the session is full before showing the form
+    if session.is_full:
+        messages.warning(request, "This session is fully booked.")
+        return render(request, "bookings/make_booking.html", {
+            "session": session,
+        })
+
     if request.method == "POST":
         form = GuestBookingForm(request.POST)
         if form.is_valid():
-            booking = form.save(commit=False)
-            booking.session = session
-
-            if session.booked_number + booking.number_of_people > session.activity.max_number:
-                messages.error(request, "Sorry, this session is fully booked.")
-            else:
+            number_of_people = form.cleaned_data['number_of_people']
+            
+            # Re-check capacity before saving to prevent overbooking
+            if session.spaces_remaining >= number_of_people:
+                booking = form.save(commit=False)
+                booking.session = session
                 booking.save()
-                # update the session booked_number
-                session.booked_number += booking.number_of_people
-                session.save()
-                messages.success(request, "Booking confirmed!")
-                return redirect("booking_success")
-            booking.save()
-            return redirect("booking_success")
+                messages.success(request, "Your booking has been confirmed!")
+                return redirect("booking_home")
+            else:
+                messages.error(request, "Not enough spaces remaining. Please choose a smaller number of people.")
     else:
-       form = GuestBookingForm(initial={'session': session})
+        form = GuestBookingForm(initial={'session': session})
 
     return render(request, "bookings/make_booking.html", {
         "form": form,
@@ -66,6 +74,24 @@ def get_sessions(request, activity_id):
     
     return JsonResponse({"sessions": sessions_data}, safe=False)
 
+def get_sessions_api(request, activity_id):
+    """API endpoint to get sessions for a given activity."""
+    activity = get_object_or_404(Activity, pk=activity_id)
+    sessions = Session.objects.filter(activity=activity).order_by('session_day', 'start_time')
+
+    session_data = []
+    for session in sessions:
+        session_data.append({
+            'pk': session.pk,
+            'session_day': session.session_day,
+            'start_time': session.start_time,
+            'available_places': session.available_places,
+            'is_full': session.is_full
+        })
+    
+    return JsonResponse({'sessions': session_data})
+
+""" Staff Views """
 
 @staff_member_required
 def staff_today_sessions(request):
@@ -95,30 +121,33 @@ def staff_today_sessions(request):
 
 @staff_member_required
 def session_bookings(request, session_id):
-    """
-    Staff view to list all bookings for a specific session.
-    Also handles marking bookings as attended.
-    """
-    session = get_object_or_404(Session, pk=session_id)
-    bookings = session.booking_set.all().order_by('first_name')
+    session = get_object_or_404(Session, id=session_id)
 
+    # Handle POST actions (attend / release)
     if request.method == "POST":
         booking_id = request.POST.get("booking_id")
         action = request.POST.get("action")
-        booking = get_object_or_404(Booking, pk=booking_id)
+        booking = get_object_or_404(Booking, id=booking_id)
 
         if action == "attend":
             booking.attended = True
             booking.save()
+            messages.success(request, f"Booking for {booking.first_name} marked as attended.")
         elif action == "release":
-            # You can add logic here to un-attend or delete
-            booking.attended = False
-            booking.save()
-        return redirect('session_bookings', session_id=session.id)
-    
+            booking.delete()
+            session.booked_number = (
+                session.booking_set.aggregate(total=Sum("number_of_people"))["total"] or 0
+            )
+            session.save()
+            messages.success(request, f"Booking for {booking.first_name} released.")
+
+        return redirect("session_bookings", session_id=session.id)
+
+    bookings = session.booking_set.all()
+
     return render(request, "bookings/session_bookings.html", {
         "session": session,
-        "bookings": bookings
+        "bookings": bookings,
     })
 
 @staff_member_required
@@ -154,3 +183,60 @@ def staff_all_sessions(request):
         "selected_day": day_filter,
         "selected_activity": activity_filter,
     })
+
+
+@staff_member_required
+def staff_make_booking(request, session_id=None):
+    """
+    Allow staff to create a booking for a guest.
+    If session_id is passed, preselect the session.
+    Superusers can override capacity checks.
+    """
+    initial_data = {}
+    locked_session = False
+
+    if session_id:
+        session = get_object_or_404(Session, id=session_id)
+        initial_data["session"] = session
+        locked_session = True
+
+    if request.method == "POST":
+        form = StaffBookingForm(request.POST, initial=initial_data, locked_session=locked_session)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            try:
+                if request.user.is_superuser:
+                    booking.full_clean(exclude=None)
+                    booking.save()
+                    messages.success(request, "Booking confirmed (override).")
+                else:
+                    booking.save()
+                    messages.success(request, "Booking confirmed.")
+                return redirect("staff_all_sessions")
+            except ValidationError as e:
+                messages.error(request, e.message)
+    else:
+        form = StaffBookingForm(initial=initial_data, locked_session=locked_session)
+
+    return render(request, "bookings/staff_booking.html", {
+        "form": form,
+        "locked_session": session if locked_session else None
+    })
+
+# Cancel a booking
+@staff_member_required
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    session = booking.session
+
+    if request.method == "POST":
+        booking.delete()
+        session.booked_number = (
+        session.booking_set.aggregate(total=Sum('number_of_people'))['total'] or 0
+        )
+        session.save()
+        messages.success(request, "Booking successfully cancelled.")
+        return redirect("staff_all_sessions")
+    
+    return render(request, "bookings/cancel_booking.html", {
+        "booking": booking})
