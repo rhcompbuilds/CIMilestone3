@@ -12,5 +12,5 @@ urlpatterns = [
     path("staff/booking/<int:session_id>/", views.staff_make_booking, name="staff_make_booking_for_session"),
     path("staff/cancel/<int:booking_id>/", views.cancel_booking, name="cancel_booking"),
     path("success/", views.booking_success, name="booking_success"),
-    path("api/sessions/<int:activity_id>/", views.get_sessions, name="get_sessions"),
+    #path("api/sessions/<int:activity_id>/", views.get_sessions, name="get_sessions"),
 ]

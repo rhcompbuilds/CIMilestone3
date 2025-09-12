@@ -64,15 +64,15 @@ def make_booking(request):
 def booking_success(request):
     return render(request, "bookings/booking_success.html")
 
-def get_sessions(request, activity_id):
-    """
-    Returns a JSON object of all sessions for a given activity.
-    """
-    sessions = Session.objects.filter(activity__id=activity_id).order_by('session_day', 'start_time')
+#def get_sessions(request, activity_id):
+#    """
+#    Returns a JSON object of all sessions for a given activity.
+#    """
+#    sessions = Session.objects.filter(activity__id=activity_id).order_by('session_day', 'start_time')
     
-    sessions_data = serializers.serialize("json", sessions)
+#    sessions_data = serializers.serialize("json", sessions)
     
-    return JsonResponse({"sessions": sessions_data}, safe=False)
+#    return JsonResponse({"sessions": sessions_data}, safe=False)
 
 def get_sessions_api(request, activity_id):
     """API endpoint to get sessions for a given activity."""

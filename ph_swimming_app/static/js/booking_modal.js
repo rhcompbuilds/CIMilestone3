@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         sessionList.innerHTML = '';
                         
-                        // This is the corrected line. It directly accesses the sessions array.
                         const sessions = data.sessions; 
                         
                         if (sessions && sessions.length > 0) {
