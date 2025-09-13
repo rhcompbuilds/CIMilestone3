@@ -21,9 +21,9 @@
     <p>Day: {{ session.session_day }} at {{ session.start_time }}</p>
     
     {% if session.is_full %}
-      <p style="color: red; font-weight: bold;">This session is fully booked. Please select another time.</p>
+      <p>Day: {{ session.get_session_day_display }} at {{ session.start_time }}</p>
     {% else %}
-      <p style="color: green; font-weight: bold;">Spaces Remaining: {{ session.spaces_remaining }}</p>
+      <p style="color: green; font-weight: bold;">Spaces Remaining: {{ session.available_places }}</p>
       <p>{{ session.activity.description }}</p>
 
       <form method="post">

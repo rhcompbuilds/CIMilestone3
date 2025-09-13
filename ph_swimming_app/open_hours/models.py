@@ -27,14 +27,11 @@ SESSION_CHOICE = [
 
 class OpeningHour(models.Model):
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
-    open_time = models.TimeField()
-    close_time = models.TimeField()
+    open = models.CharField(max_length=5, choices=SESSION_CHOICE)
+    close = models.CharField(max_length=5, choices=SESSION_CHOICE)
 
     def __str__(self):
-        return f"{self.day}: {self.open_time.strftime('%H:%M')} - {self.close_time.strftime('%H:%M')}"
-
-    class Meta:        
-        pass
+        return f"{self.day}: {self.open} - {self.close}"
 
 class Activity(models.Model):
     activity_name = models.CharField(max_length=100)
@@ -42,7 +39,7 @@ class Activity(models.Model):
     max_number = models.IntegerField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     duration = models.DurationField(default=timedelta(hours=1))
-    activity_image = CloudinaryField('image', default='placeholder')
+    activity_image = CloudinaryField('image', null=True, blank=True)
 
     def __str__(self):
         return self.activity_name
@@ -57,7 +54,7 @@ class Session(models.Model):
     
     @property
     def people_booked(self):
-        return self.booking_set.aggregate(Sum('number_of_people'))['number_of_people__sum'] or 0
+       return self.booking_set.aggregate(Sum('number_of_people'))['number_of_people__sum'] or 0
 
     @property
     def available_places(self):
@@ -69,17 +66,16 @@ class Session(models.Model):
     @property
     def is_full(self):
         return self.available_places <= 0
-
+        
     @property
     def end_time(self):
         if self.activity:
-            # Convert the string start_time back to a datetime.time object
             start_time_obj = datetime.strptime(self.start_time, '%H:%M').time()
             start_datetime = datetime.combine(timezone.now().date(), start_time_obj)
             end_datetime = start_datetime + self.activity.duration
             return end_datetime.time()
         return None
-
+        
     def __str__(self):
         activity_name = self.activity.activity_name if self.activity else "No Activity"
         return f"{activity_name} on {self.get_session_day_display()} starting at {self.start_time}"

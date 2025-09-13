@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from django.core import serializers
+#from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from .models import Booking
 from open_hours.models import Activity, Session
-from .forms import GuestBookingForm
-from .forms import StaffBookingForm
+from .forms import GuestBookingForm, StaffBookingForm
 from django.db.models import Sum, F
 from datetime import date, timedelta
 
@@ -24,35 +23,23 @@ def booking_home(request):
 
 def make_booking(request):
     session_id = request.GET.get("session")
-    
-    if not session_id:
-        messages.error(request, "A valid session must be selected.")
-        return redirect('booking_home')
-
-    session = get_object_or_404(Session, pk=session_id)
-
-    # Check if the session is full before showing the form
-    if session.is_full:
-        messages.warning(request, "This session is fully booked.")
-        return render(request, "bookings/make_booking.html", {
-            "session": session,
-        })
-
+    session = None
+    if session_id:
+        session = get_object_or_404(Session, pk=session_id)
+        
     if request.method == "POST":
         form = GuestBookingForm(request.POST)
         if form.is_valid():
-            number_of_people = form.cleaned_data['number_of_people']
-            
-            # Re-check capacity before saving to prevent overbooking
-            if session.spaces_remaining >= number_of_people:
-                booking = form.save(commit=False)
-                booking.session = session
+            booking = form.save(commit=False)
+            booking.session = session
+            try:
                 booking.save()
-                messages.success(request, "Your booking has been confirmed!")
-                return redirect("booking_home")
-            else:
-                messages.error(request, "Not enough spaces remaining. Please choose a smaller number of people.")
+                messages.success(request, "Booking confirmed!")
+                return redirect("booking_success")
+            except ValidationError as e:
+                messages.error(request, e.message)
     else:
+        # Pre-populate the form with the selected session
         form = GuestBookingForm(initial={'session': session})
 
     return render(request, "bookings/make_booking.html", {
@@ -64,32 +51,27 @@ def make_booking(request):
 def booking_success(request):
     return render(request, "bookings/booking_success.html")
 
-#def get_sessions(request, activity_id):
-#    """
-#    Returns a JSON object of all sessions for a given activity.
-#    """
-#    sessions = Session.objects.filter(activity__id=activity_id).order_by('session_day', 'start_time')
-    
-#    sessions_data = serializers.serialize("json", sessions)
-    
-#    return JsonResponse({"sessions": sessions_data}, safe=False)
+def get_sessions(request, activity_id):
+    try:
+        sessions = Session.objects.filter(activity__id=activity_id).order_by('session_day', 'start_time')
+        
+        sessions_data = []
+        for session in sessions:
+            sessions_data.append({
+                'pk': session.pk,
+                'session_day': session.get_session_day_display(),
+                'start_time': session.start_time,
+                'is_full': session.is_full,
+                'available_places': session.available_places,
+            })
+            
+        return JsonResponse({"sessions": sessions_data})
 
-def get_sessions_api(request, activity_id):
-    """API endpoint to get sessions for a given activity."""
-    activity = get_object_or_404(Activity, pk=activity_id)
-    sessions = Session.objects.filter(activity=activity).order_by('session_day', 'start_time')
-
-    session_data = []
-    for session in sessions:
-        session_data.append({
-            'pk': session.pk,
-            'session_day': session.session_day,
-            'start_time': session.start_time,
-            'available_places': session.available_places,
-            'is_full': session.is_full
-        })
-    
-    return JsonResponse({'sessions': session_data})
+    except Exception as e:
+        # Log the error for debugging
+        print(f"An error occurred in get_sessions view: {e}")
+        # Return a valid JSON error response
+        return JsonResponse({"error": "An internal server error occurred."}, status=500)
 
 """ Staff Views """
 
