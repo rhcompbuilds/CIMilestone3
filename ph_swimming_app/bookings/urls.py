@@ -11,8 +11,6 @@ urlpatterns = [
     path("staff/booking/", views.staff_make_booking, name="staff_make_booking"),
     path('staff/booking/<int:session_id>/', views.staff_make_booking, name='staff_make_booking_for_session'),
     path('staff/sessions/<int:session_id>/bookings/', views.session_bookings_list, name='session_bookings_list'),
-    path('staff/bookings/mark-attended/', views.mark_attended, name='mark_attended'),
-    path('staff/bookings/release/', views.release_booking, name='release_booking'),
     path("success/", views.booking_success, name="booking_success"),
     path("api/sessions/<int:activity_id>/", views.get_sessions, name="get_sessions"),
 ]

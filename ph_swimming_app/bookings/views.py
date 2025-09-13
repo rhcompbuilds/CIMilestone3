@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-#from django.core import serializers
 from django.core.exceptions import ValidationError
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Sum, F
+from datetime import date, timedelta
 from .models import Booking
 from open_hours.models import Activity, Session
 from .forms import GuestBookingForm, StaffBookingForm
-from django.db.models import Sum, F
-from datetime import date, timedelta
+
 
 """ Guest Views """
 def booking_home(request):
@@ -20,7 +20,6 @@ def booking_home(request):
         "activities": activities,
     })
 
- 
 def make_booking(request):
     session_id = request.GET.get("session")
     session = None
@@ -74,25 +73,6 @@ def get_sessions(request, activity_id):
         return JsonResponse({"error": "An internal server error occurred."}, status=500)
 
 """ Staff Views """
-
-def mark_attended(request):
-    if request.method == "POST":
-        booking_id = request.POST.get('booking_id')
-        booking = Booking.objects.get(id=booking_id)
-        booking.attended = True
-        booking.save()
-        # Redirect back to the session bookings page
-        return redirect('session_bookings_list', session_id=booking.session.id)
-
-def release_booking(request):
-    if request.method == "POST":
-        booking_id = request.POST.get('booking_id')
-        booking = Booking.objects.get(id=booking_id)
-        booking.delete()
-        # Redirect back to the session bookings page
-        return redirect('session_bookings_list', session_id=booking.session.id)
-
-
 
 @staff_member_required
 def staff_today_sessions(request):
@@ -149,10 +129,6 @@ def session_bookings(request, session_id):
             messages.success(request, f"Booking for {booking.first_name} marked as attended.")
         elif action == "release":
             booking.delete()
-            session.booked_number = (
-                session.booking_set.aggregate(total=Sum("number_of_people"))["total"] or 0
-            )
-            session.save()
             messages.success(request, f"Booking for {booking.first_name} released.")
 
         return redirect("session_bookings", session_id=session.id)
@@ -245,10 +221,6 @@ def cancel_booking(request, booking_id):
 
     if request.method == "POST":
         booking.delete()
-        session.booked_number = (
-        session.booking_set.aggregate(total=Sum('number_of_people'))['total'] or 0
-        )
-        session.save()
         messages.success(request, "Booking successfully cancelled.")
         return redirect("staff_all_sessions")
     
