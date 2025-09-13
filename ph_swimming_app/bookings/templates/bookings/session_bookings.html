@@ -20,16 +20,20 @@
       <td>{{ booking.email }}</td>
       <td>{{ booking.attended }}</td>
       <td>
-        <form method="post" style="display:inline;">
+        <!-- Corrected form for Mark Attended -->
+        <form action="{% url 'mark_attended' %}" method="post" style="display:inline;">
           {% csrf_token %}
           <input type="hidden" name="booking_id" value="{{ booking.id }}">
           <button type="submit" name="action" value="attend">Mark Attended</button>
         </form>
-        <form method="post" style="display:inline;">
+        
+        <!-- Corrected form for Release -->
+        <form action="{% url 'release_booking' %}" method="post" style="display:inline;">
           {% csrf_token %}
           <input type="hidden" name="booking_id" value="{{ booking.id }}">
           <button type="submit" name="action" value="release">Release</button>
         </form>
+        
         <a href="{% url 'cancel_booking' booking.id %}">
           <button type="button">Cancel</button>
         </a>

@@ -75,6 +75,25 @@ def get_sessions(request, activity_id):
 
 """ Staff Views """
 
+def mark_attended(request):
+    if request.method == "POST":
+        booking_id = request.POST.get('booking_id')
+        booking = Booking.objects.get(id=booking_id)
+        booking.attended = True
+        booking.save()
+        # Redirect back to the session bookings page
+        return redirect('session_bookings_list', session_id=booking.session.id)
+
+def release_booking(request):
+    if request.method == "POST":
+        booking_id = request.POST.get('booking_id')
+        booking = Booking.objects.get(id=booking_id)
+        booking.delete()
+        # Redirect back to the session bookings page
+        return redirect('session_bookings_list', session_id=booking.session.id)
+
+
+
 @staff_member_required
 def staff_today_sessions(request):
     """
@@ -99,6 +118,19 @@ def staff_today_sessions(request):
 
     return render(request, "bookings/staff_sessions_grid.html", {
         "today_sessions": today_sessions
+    })
+
+@staff_member_required
+def session_bookings_list(request, session_id):
+    """
+    Displays a list of all bookings for a specific session.
+    """
+    session = get_object_or_404(Session, id=session_id)
+    bookings = Booking.objects.filter(session=session)
+
+    return render(request, "bookings/session_bookings.html", {
+        "session": session,
+        "bookings": bookings,
     })
 
 @staff_member_required

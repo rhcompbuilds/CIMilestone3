@@ -52,8 +52,8 @@
         <td>{{ session.total_booked }}</td>
         <td>{{ session.available_places }}</td>
         <td>
-          <a href="{% url 'staff_make_booking_for_session' session.id %}">
-            <button type="button">Make Booking</button>
+           <a href="{% url 'session_bookings_list' session.id %}">
+              <button type="button">View Bookings</button>
           </a>
         </td>
       </tr>
