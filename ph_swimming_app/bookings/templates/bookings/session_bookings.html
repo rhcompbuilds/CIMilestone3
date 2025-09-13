@@ -1,46 +1,64 @@
 {% extends "base.html" %}
 {% block title %}Session Bookings{% endblock %}
-{% block content %}
-  <h2>Bookings for {{ session.session_day }} at {{ session.start_time }}</h2>
 
-  <table>
-    <tr>
-      <th>Guest</th>
-      <th>Caravan</th>
-      <th>People</th>
-      <th>Email</th>
-      <th>Attended</th>
-      <th>Actions</th>
-    </tr>
-    {% for booking in bookings %}
-    <tr>
-      <td>{{ booking.first_name }} {{ booking.last_name }}</td>
-      <td>{{ booking.caravan_number }}</td>
-      <td>{{ booking.number_of_people }}</td>
-      <td>{{ booking.email }}</td>
-      <td>{{ booking.attended }}</td>
-      <td>
-        <!-- Form for Mark Attended -->
-        <form action="{% url 'mark_attended' %}" method="post" style="display:inline;">
-          {% csrf_token %}
-          <!-- Pass the booking ID in a hidden input -->
-          <input type="hidden" name="booking_id" value="{{ booking.id }}">
-          <button type="submit">Mark Attended</button>
-        </form>
-        
-        <!-- Form for Release -->
-        <form action="{% url 'release_booking' %}" method="post" style="display:inline;">
-          {% csrf_token %}
-          <!-- Pass the booking ID in a hidden input -->
-          <input type="hidden" name="booking_id" value="{{ booking.id }}">
-          <button type="submit">Release</button>
-        </form>
-        
-        <a href="{% url 'cancel_booking' booking.id %}">
-          <button type="button">Cancel</button>
-        </a>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+{% block content %}
+<div class="container mt-4">
+    <div id="message-container"></div>
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Bookings for {{ session.session_day|date:"l" }} at {{ session.start_time|time:"H:i" }}</h2>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Guest</th>
+                                    <th>Caravan</th>
+                                    <th>People</th>
+                                    <th>Email</th>
+                                    <th>Attended</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-table-body">
+                                {% for booking in bookings %}
+                                <tr id="booking-{{ booking.id }}">
+                                    <td>{{ booking.first_name }} {{ booking.last_name }}</td>
+                                    <td>{{ booking.caravan_number }}</td>
+                                    <td>{{ booking.number_of_people }}</td>
+                                    <td>{{ booking.email }}</td>
+                                    <td class="attended-status-{{ booking.id }}">{% if booking.attended %}Yes{% else %}No{% endif %}</td>
+                                    <td>
+                                        <div class="d-flex justify-content-start align-items-center">
+                                            <form class="booking-action-form" method="post" action="{% url 'session_bookings' session.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                                <button type="submit" name="action" value="attend" class="btn btn-success btn-sm me-2">Mark Attended</button>
+                                            </form>
+                                            <form class="booking-action-form" method="post" action="{% url 'session_bookings' session.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                                <button type="submit" name="action" value="release" class="btn btn-warning btn-sm me-2">Release</button>
+                                            </form>
+                                            <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-danger btn-sm">Cancel</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No bookings for this session.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'staff_all_sessions' %}" class="btn btn-secondary">Back to Sessions</a>
+    </div>
+</div>
 {% endblock %}

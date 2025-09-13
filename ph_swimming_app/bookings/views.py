@@ -1,14 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
-from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Sum, F
-from datetime import date, timedelta
+from django.contrib import messages
 from .models import Booking
 from open_hours.models import Activity, Session
 from .forms import GuestBookingForm, StaffBookingForm
-
+from django.db.models import Sum, F
+from datetime import date, timedelta
 
 """ Guest Views """
 def booking_home(request):
@@ -126,12 +125,12 @@ def session_bookings(request, session_id):
         if action == "attend":
             booking.attended = True
             booking.save()
-            messages.success(request, f"Booking for {booking.first_name} marked as attended.")
+            # Return a JSON response instead of a redirect
+            return JsonResponse({"status": "success", "message": f"Booking for {booking.first_name} marked as attended."})
         elif action == "release":
             booking.delete()
-            messages.success(request, f"Booking for {booking.first_name} released.")
-
-        return redirect("session_bookings", session_id=session.id)
+            # Return a JSON response instead of a redirect
+            return JsonResponse({"status": "success", "message": f"Booking for {booking.first_name} released."})
 
     bookings = session.booking_set.all()
 
