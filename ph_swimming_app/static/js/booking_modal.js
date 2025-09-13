@@ -21,8 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Function to fetch sessions and display modal
-    // Function to fetch sessions and display modal
+   // Function to fetch sessions and display modal
 function fetchAndDisplaySessions(activityId) {
     const url = `/bookings/api/sessions/${activityId}/`;
     fetch(url)

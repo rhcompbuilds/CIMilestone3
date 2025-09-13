@@ -20,7 +20,7 @@ def booking_home(request):
         "activities": activities,
     })
 
-
+ 
 def make_booking(request):
     session_id = request.GET.get("session")
     session = None
