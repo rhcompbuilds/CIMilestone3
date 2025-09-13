@@ -120,17 +120,21 @@ def session_bookings(request, session_id):
     if request.method == "POST":
         booking_id = request.POST.get("booking_id")
         action = request.POST.get("action")
-        booking = get_object_or_404(Booking, id=booking_id)
+        try:
+            booking = get_object_or_404(Booking, id=booking_id)
 
-        if action == "attend":
-            booking.attended = True
-            booking.save()
-            # Return a JSON response instead of a redirect
-            return JsonResponse({"status": "success", "message": f"Booking for {booking.first_name} marked as attended."})
-        elif action == "release":
-            booking.delete()
-            # Return a JSON response instead of a redirect
-            return JsonResponse({"status": "success", "message": f"Booking for {booking.first_name} released."})
+            if action == "attend":
+                booking.attended = True
+                booking.save()
+                # Return a JSON response instead of a redirect
+                return JsonResponse({"status": "success", "message": f"Booking for {booking.first_name} marked as attended."})
+            elif action == "release":
+                first_name = booking.first_name
+                booking.delete()
+                # Return a JSON response after a successful deletion
+                return JsonResponse({"status": "success", "message": f"Booking for {first_name} released."})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)})
 
     bookings = session.booking_set.all()
 
