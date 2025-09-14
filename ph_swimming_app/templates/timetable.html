@@ -6,6 +6,9 @@
 
 {% block content %}
 
+<!-- Container for messages -->
+<div id="message-container"></div>
+
 {% for day_code, day_label in day_choices %}
 <div class="day-page" data-day-index="{{ forloop.counter0 }}" {% if not forloop.first %}style="display:none;"{% endif %}>
   <h2>{{ day_label }}</h2>
@@ -73,6 +76,5 @@
 
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'js/booking_modal.js' %}" crossorigin="use-credentials"></script>
+<script src="{% static 'js/livecontent.js' %}" crossorigin="use-credentials"></script>
 {% endblock %}
-

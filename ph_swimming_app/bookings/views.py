@@ -7,7 +7,8 @@ from .models import Booking
 from open_hours.models import Activity, Session
 from .forms import GuestBookingForm, StaffBookingForm
 from django.db.models import Sum, F
-from datetime import date, timedelta
+from datetime import datetime, date, time, timedelta
+from django.views.decorators.csrf import csrf_exempt
 
 """ Guest Views """
 def booking_home(request):
@@ -49,7 +50,11 @@ def make_booking(request):
 def booking_success(request):
     return render(request, "bookings/booking_success.html")
 
+@csrf_exempt
 def get_sessions(request, activity_id):
+    """
+    API endpoint to retrieve sessions for a given activity.
+    """
     try:
         sessions = Session.objects.filter(activity__id=activity_id).order_by('session_day', 'start_time')
         
@@ -58,7 +63,7 @@ def get_sessions(request, activity_id):
             sessions_data.append({
                 'pk': session.pk,
                 'session_day': session.get_session_day_display(),
-                'start_time': session.start_time,
+                'start_time': session.start_time.strftime('%H:%M'),
                 'is_full': session.is_full,
                 'available_places': session.available_places,
             })
@@ -111,6 +116,38 @@ def session_bookings_list(request, session_id):
         "session": session,
         "bookings": bookings,
     })
+
+@csrf_exempt
+def add_session(request):
+    """
+    API endpoint to assign an activity to a session slot.
+    """
+    if request.method == 'POST':
+        try:
+            session_day = request.POST.get('session_day')
+            start_time_str = request.POST.get('start_time')
+            activity_id = request.POST.get('activity')
+            
+            # Convert time string to a time object
+            start_time_obj = datetime.strptime(start_time_str, '%H:%M').time()
+            
+            # Find or create the session
+            session, created = Session.objects.get_or_create(
+                session_day=session_day,
+                start_time=start_time_obj,
+                defaults={'activity_id': activity_id}
+            )
+            
+            if not created:
+                session.activity_id = activity_id
+                session.save()
+
+            return JsonResponse({'success': True, 'message': 'Activity assigned successfully.'})
+        except Exception as e:
+            # Handle potential errors, such as invalid time format or missing data
+            return JsonResponse({'success': False, 'message': f'An error occurred: {e}'}, status=500)
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
+
 
 @staff_member_required
 def session_bookings(request, session_id):

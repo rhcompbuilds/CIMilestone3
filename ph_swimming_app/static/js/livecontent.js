@@ -27,7 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    showDay(currentIndex);
+    // Ensure the initial day is shown only after the DOM is ready
+    if (dayPages.length > 0) {
+        showDay(currentIndex);
+    }
 
     // --- Modal handling ---
     const modal = document.getElementById('activityModal');
@@ -36,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDay = document.getElementById('modalDay');
     const modalTime = document.getElementById('modalTime');
     const activitySelect = document.getElementById('activitySelect');
-    
+
     // Add event listeners ONLY if the modal elements exist
     if (modal && closeModal && assignBtn) {
         closeModal.addEventListener('click', () => {
@@ -63,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const activityName = activitySelect.selectedOptions[0].text;
 
             if (!activityId) {
-                alert('Please select an activity.');
+                showMessage("Please select an activity.", "alert-danger");
                 return;
             }
 
@@ -75,7 +78,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: `session_day=${day}&start_time=${time}&activity=${activityId}`
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     // Update the UI
@@ -93,13 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     modal.style.display = 'none';
+                    showMessage("Activity assigned successfully!", "alert-success");
                 } else {
-                    alert(data.message);
+                    showMessage(data.message, "alert-danger");
                 }
             })
             .catch(err => {
                 console.error('AJAX error:', err);
-                alert('An error occurred.');
+                showMessage('An error occurred.', "alert-danger");
             });
         });
     }
@@ -119,4 +128,17 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+// Custom message display function to avoid alert()
+function showMessage(message, className) {
+    const messageContainer = document.getElementById('message-container');
+    if (messageContainer) {
+        messageContainer.innerHTML = `<div class="alert ${className}">${message}</div>`;
+        setTimeout(() => {
+            messageContainer.innerHTML = '';
+        }, 3000);
+    } else {
+        console.warn('Message container not found. Message:', message);
+    }
 }

@@ -36,3 +36,6 @@
     <p>No session selected. Please go back and choose a session to book.</p>
   {% endif %}
 {% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/booking_modal.js' %}" crossorigin="use-credentials"></script>
+{% endblock %}

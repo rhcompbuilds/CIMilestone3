@@ -14,9 +14,7 @@
     <title>{% block title %}Online Bookings App{% endblock %}</title>
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <script src="{% static 'js/livecontent.js' %}" crossorigin="use-credentials"></script>
-    <script src="{% static 'js/booking_modal.js' %}" crossorigin="use-credentials"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     
 </head>
 <body>
@@ -41,12 +39,12 @@
                     <li class="nav-item">
                         <a class="nav-link" {% if request.path == staff_today_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_today_sessions' %}">Bookings for Today</a>
                     </li>
-                        {% endif %}
-                    {% if user.is_staff %}
+                         {% endif %}
+                     {% if user.is_staff %}
                     <li class="nav-item">
                         <a class="nav-link" {% if request.path == staff_all_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_all_sessions' %}">Weeks Bookings</a>
                     </li>
-                        {% endif %}                    
+                         {% endif %}             
                     {% if request.user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.path == logout_url %}active{% endif %}" aria-current="page" href="{% url 'account_logout' %}">Logout</a>
@@ -75,8 +73,10 @@
     </footer>
         
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" 
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
+        xintegrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
     </script>
+    {% block extra_js %}
+    {% endblock %}
 </body>
 
 </html>
