@@ -109,3 +109,14 @@ def get_timetable_data(request):
         }
 
     return JsonResponse(timetable_data)
+
+
+"""
+Additional views for drag-and-drop scheduling
+"""
+def scheduler_view(request):
+    """
+    Renders the drag-and-drop scheduler page.
+    This page should only be accessible to a superuser.
+    """
+    return render(request, 'open_hours/scheduler.html')

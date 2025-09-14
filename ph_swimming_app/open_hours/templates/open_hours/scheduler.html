@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Activity Scheduler</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+    <h1>Drag & Drop Scheduler</h1>
+    <div class="container">
+        <!-- Draggable Activity List (for superuser) -->
+        <div class="activity-list">
+            <h2>Available Activities</h2>
+            <div id="activity-container">
+                <!-- Activities will be loaded here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Timetable Grid -->
+        <div class="timetable">
+            <h2>Weekly Timetable</h2>
+            <div id="timetable-grid" class="timetable-grid">
+                <!-- Header row for days -->
+                <div class="timetable-header"></div>
+                <div class="timetable-header">Mon</div>
+                <div class="timetable-header">Tue</div>
+                <div class="timetable-header">Wed</div>
+                <div class="timetable-header">Thu</div>
+                <div class="timetable-header">Fri</div>
+                <div class="timetable-header">Sat</div>
+                <div class="timetable-header">Sun</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
+            const timetableGrid = document.getElementById('timetable-grid');
+            const activityContainer = document.getElementById('activity-container');
+
+            let draggedItem = null;
+
+            // --- Fetch Activities for Dragging ---
+            const fetchActivities = async () => {
+                try {
+                    // You'll need to create this API endpoint in Django
+                    const response = await fetch('/api/activities/');
+                    const activities = await response.json();
+                    
+                    activities.forEach(activity => {
+                        const activityItem = document.createElement('div');
+                        activityItem.className = 'activity-item';
+                        activityItem.setAttribute('draggable', true);
+                        activityItem.setAttribute('data-activity-id', activity.id);
+                        activityItem.setAttribute('data-activity-name', activity.activity_name);
+                        activityItem.textContent = activity.activity_name;
+                        activityContainer.appendChild(activityItem);
+                    });
+                } catch (error) {
+                    console.error('Failed to fetch activities:', error);
+                    activityContainer.innerHTML = 'Failed to load activities.';
+                }
+            };
+
+            // --- Build the Droppable Timetable Grid ---
+            const buildTimetable = () => {
+                times.forEach(time => {
+                    const timeHeader = document.createElement('div');
+                    timeHeader.className = 'timetable-header';
+                    timeHeader.textContent = time;
+                    timetableGrid.appendChild(timeHeader);
+
+                    days.forEach(day => {
+                        const slot = document.createElement('div');
+                        slot.className = 'time-slot';
+                        slot.setAttribute('data-day', day);
+                        slot.setAttribute('data-time', time);
+                        
+                        // Drag & Drop event listeners
+                        slot.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            slot.classList.add('drag-over');
+                        });
+                        slot.addEventListener('dragleave', (e) => {
+                            slot.classList.remove('drag-over');
+                        });
+                        slot.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            slot.classList.remove('drag-over');
+                            if (draggedItem) {
+                                // Get data from the dragged item
+                                const activityId = draggedItem.getAttribute('data-activity-id');
+                                const activityName = draggedItem.getAttribute('data-activity-name');
+                                const day = slot.getAttribute('data-day');
+                                const time = slot.getAttribute('data-time');
+                                
+                                // Create a session on the frontend
+                                const sessionCard = document.createElement('div');
+                                sessionCard.className = 'session-card';
+                                sessionCard.textContent = activityName;
+                                slot.appendChild(sessionCard);
+
+                                // Save to the database
+                                saveSession(activityId, day, time);
+                            }
+                        });
+
+                        timetableGrid.appendChild(slot);
+                    });
+                });
+            };
+
+            // --- API Call to Save Session ---
+            const saveSession = async (activityId, sessionDay, startTime) => {
+                try {
+                    const response = await fetch('/api/schedule/create/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'), // Django CSRF token
+                        },
+                        body: JSON.stringify({
+                            activity: activityId,
+                            session_day: sessionDay,
+                            start_time: startTime,
+                        }),
+                    });
+
+                    if (response.ok) {
+                        console.log('Session created successfully!');
+                    } else {
+                        const errorData = await response.json();
+                        console.error('Failed to create session:', errorData);
+                        // Optional: remove the session card from the UI on failure
+                    }
+                } catch (error) {
+                    console.error('Network error while saving session:', error);
+                }
+            };
+
+            // --- Drag events ---
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('activity-item')) {
+                    draggedItem = e.target;
+                    e.dataTransfer.effectAllowed = 'move';
+                }
+            });
+
+            document.addEventListener('dragend', () => {
+                draggedItem = null;
+            });
+
+            // --- CSRF Token Helper Function ---
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.startsWith(name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            // --- Initialise the page ---
+            fetchActivities();
+            buildTimetable();
+        });
+    </script>
+{% endblock %}
