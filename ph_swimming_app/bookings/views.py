@@ -50,30 +50,48 @@ def make_booking(request):
 def booking_success(request):
     return render(request, "bookings/booking_success.html")
 
-@csrf_exempt
 def get_sessions(request, activity_id):
     """
     API endpoint to retrieve sessions for a given activity.
+    Always returns valid JSON, even if Session fields are inconsistent.
     """
     try:
         sessions = Session.objects.filter(activity__id=activity_id).order_by('session_day', 'start_time')
-        
+
         sessions_data = []
         for session in sessions:
+            # Handle session_day
+            day_val = getattr(session, "session_day", "")
+            if hasattr(day_val, "strftime"):
+                session_day_str = day_val.strftime("%Y-%m-%d")
+            else:
+                session_day_str = str(day_val) if day_val is not None else ""
+
+            # Handle start_time
+            time_val = getattr(session, "start_time", "")
+            if hasattr(time_val, "strftime"):
+                start_time_str = time_val.strftime("%H:%M")
+            else:
+                start_time_str = str(time_val) if time_val is not None else ""
+
+            # Handle is_full
+            is_full_val = session.is_full() if callable(session.is_full) else bool(session.is_full)
+
+            # Handle available_places (fallback to 0 if missing)
+            available_places_val = getattr(session, "available_places", 0)
+
             sessions_data.append({
-                'pk': session.pk,
-                'session_day': session.get_session_day_display(),
-                'start_time': session.start_time.strftime('%H:%M'),
-                'is_full': session.is_full,
-                'available_places': session.available_places,
+                "pk": session.pk,
+                "session_day": session_day_str,
+                "start_time": start_time_str,
+                "is_full": is_full_val,
+                "available_places": available_places_val,
             })
-            
-        return JsonResponse({"sessions": sessions_data})
+
+        return JsonResponse({"sessions": sessions_data}, status=200)
 
     except Exception as e:
-        # Log the error for debugging
         print(f"An error occurred in get_sessions view: {e}")
-        # Return a valid JSON error response
         return JsonResponse({"error": "An internal server error occurred."}, status=500)
 
 """ Staff Views """

@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const sessionList = document.getElementById('session-list');
     const closeBtn = document.querySelector('.close-btn');
 
-    // This block of code will only run if the modal elements exist on the page.
     if (sessionModal && sessionList && closeBtn) {
         // Function to close modal
         function closeModal() {
@@ -23,52 +22,40 @@ document.addEventListener('DOMContentLoaded', function() {
         function fetchAndDisplaySessions(activityId) {
             const url = `/bookings/api/sessions/${activityId}/`;
             fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    sessionList.innerHTML = '';
-                    const sessions = data.sessions;
-                    if (sessions && sessions.length > 0) {
-                        sessions.forEach(session => {
-                            const listItem = document.createElement('li');
+  .then(res => res.json())
+  .then(data => {
+    sessionList.innerHTML = "";
 
-                            // Check if the session is fully booked
-                            if (session.is_full) {
-                                listItem.classList.add('fully-booked-item');
-                                listItem.innerHTML = `
-                                    <strong>${session.session_day}</strong> at ${session.start_time} -
-                                    <span class="fully-booked">Fully Booked</span>
-                                `;
-                            } else {
-                                // Display the link and remaining places for available sessions
-                                listItem.innerHTML = `
-                                    <strong>${session.session_day}</strong> at ${session.start_time} -
-                                    <a href="/bookings/make/?session=${session.pk}">
-                                        Book Now (${session.available_places} spaces left)
-                                    </a>
-                                `;
-                            }
+    if (data.error) {
+      // API error returned by backend
+      sessionList.innerHTML = `<li style="color: red;">Error: ${data.error}</li>`;
+    } else if (data.sessions && data.sessions.length > 0) {
+      data.sessions.forEach(session => {
+        const listItem = document.createElement("li");
 
-                            sessionList.appendChild(listItem);
-                        });
-                    } else {
-                        sessionList.innerHTML = '<li>No sessions available for this activity.</li>';
-                    }
-                    sessionModal.style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error fetching sessions:', error);
-                    if (sessionList) {
-                        sessionList.innerHTML = '<li>An error occurred. Please try again later.</li>';
-                    }
-                    if (sessionModal) {
-                        sessionModal.style.display = 'block';
-                    }
-                });
+        let bookingLinkHtml = session.is_full
+          ? '<span style="color: red; font-weight: bold;">Fully Booked</span>'
+          : `<a href="/bookings/make/?session=${session.pk}">Book Now (${session.available_places} spaces left)</a>`;
+
+        listItem.innerHTML = `
+          <strong>${session.session_day}</strong> at ${session.start_time} - ${bookingLinkHtml}
+        `;
+        sessionList.appendChild(listItem);
+      });
+    } else {
+      // No sessions available
+      sessionList.innerHTML = "<li>No sessions available for this activity.</li>";
+    }
+
+    // ✅ Always show the modal
+    sessionModal.style.display = "block";
+  })
+  .catch(error => {
+    console.error("Error fetching sessions:", error);
+    sessionList.innerHTML = "<li>An unexpected error occurred. Please try again later.</li>";
+    sessionModal.style.display = "block";
+  });
+
         }
 
         if (activityCards.length > 0) {
@@ -81,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Now, add the new logic for handling form submissions on the session_bookings.html page
+    // Logic for handling booking form submissions
     const bookingForms = document.querySelectorAll('.booking-form');
     if (bookingForms.length > 0) {
         bookingForms.forEach(form => {
