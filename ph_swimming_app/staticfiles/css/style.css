@@ -150,6 +150,16 @@ body {
   font-weight: bold;
 }
 
+.fully-booked {
+    color: red;
+    font-weight: bold;
+}
+
+.fully-booked-item {
+    opacity: 0.7;
+    background-color: #f2f2f2;
+}
+
 @media screen and (max-width: 600px) {
     .activity-grid {
         grid-template-columns:subgrid;

@@ -20,43 +20,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Function to fetch sessions and display modal
         function fetchAndDisplaySessions(activityId) {
-            const url = `/bookings/api/sessions/${activityId}/`;
-            fetch(url)
-  .then(res => res.json())
-  .then(data => {
+    const url = `/bookings/api/sessions/${activityId}/`;
+    fetch(url)
+        .then(res => {
+            // Check for both HTTP status and Content-Type
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // If the response is not JSON, read it as text and throw an error.
+                // This will catch cases where the server returns a 200 OK with an HTML body.
+                return res.text().then(text => {
+                    throw new Error('Server did not return a JSON response. Response was: ' + text);
+                });
+            }
+            // If the Content-Type is correct, return the JSON data.
+            return res.json();
+        })
+        .then(data => {
     sessionList.innerHTML = "";
 
-    if (data.error) {
-      // API error returned by backend
-      sessionList.innerHTML = `<li style="color: red;">Error: ${data.error}</li>`;
-    } else if (data.sessions && data.sessions.length > 0) {
-      data.sessions.forEach(session => {
-        const listItem = document.createElement("li");
+    try {
+        if (data.error) {
+            sessionList.innerHTML = `<li style="color: red;">Error: ${data.error}</li>`;
+        } else if (data.sessions && data.sessions.length > 0) {
+            data.sessions.forEach(session => {
+                const listItem = document.createElement("li");
 
-        let bookingLinkHtml = session.is_full
-          ? '<span style="color: red; font-weight: bold;">Fully Booked</span>'
-          : `<a href="/bookings/make/?session=${session.pk}">Book Now (${session.available_places} spaces left)</a>`;
+                let bookingLinkHtml = session.is_full
+                    ? '<span style="color: red; font-weight: bold;">Fully Booked</span>'
+                    : `<a href="/bookings/make/?session=${session.pk}">Book Now (${session.available_places} spaces left)</a>`;
 
-        listItem.innerHTML = `
-          <strong>${session.session_day}</strong> at ${session.start_time} - ${bookingLinkHtml}
-        `;
-        sessionList.appendChild(listItem);
-      });
-    } else {
-      // No sessions available
-      sessionList.innerHTML = "<li>No sessions available for this activity.</li>";
+                listItem.innerHTML = `
+                    <strong>${session.session_day}</strong> at ${session.start_time} - ${bookingLinkHtml}
+                `;
+                sessionList.appendChild(listItem);
+            });
+        } else {
+            sessionList.innerHTML = "<li>No sessions available for this activity.</li>";
+        }
+    } catch (e) {
+        // This will display the JS error message in the modal
+        console.error("Error building session list:", e);
+        sessionList.innerHTML = `<li style="color: red;">Failed to display sessions. Error: ${e.message}</li>`;
     }
 
-    // ✅ Always show the modal
     sessionModal.style.display = "block";
-  })
-  .catch(error => {
-    console.error("Error fetching sessions:", error);
-    sessionList.innerHTML = "<li>An unexpected error occurred. Please try again later.</li>";
-    sessionModal.style.display = "block";
-  });
-
-        }
+});
+}
 
         if (activityCards.length > 0) {
             activityCards.forEach(card => {
