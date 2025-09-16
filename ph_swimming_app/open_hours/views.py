@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import generics
+from .serializers import ActivitySerializer, SessionSerializer
 from .models import Session, Activity, DAY_CHOICES, SESSION_CHOICE
 
 def show_timetable(request):
@@ -120,3 +122,27 @@ def scheduler_view(request):
     This page should only be accessible to a superuser.
     """
     return render(request, 'open_hours/scheduler.html')
+
+# API view to get all activities
+class ActivityListAPIView(generics.ListAPIView):
+    # This view returns a list of all activities.
+    # It will be called by the scheduler.html file's fetch request.
+    queryset = Activity.objects.all()
+    serializer_class = ActivitySerializer
+
+# API view to create a new session
+class ScheduleCreateAPIView(generics.CreateAPIView):
+    # This view receives the POST request from the frontend
+    # and creates a new Session object.
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
+
+# You'll also need a view to display the timetable on timetable.html
+# This can be a standard Django view that passes the Session objects to the template context.
+from django.shortcuts import render
+from .models import Session
+
+def timetable_view(request):
+    sessions = Session.objects.all().select_related('activity').order_by('start_time')
+    context = {'sessions': sessions}
+    return render(request, 'timetable.html', context)

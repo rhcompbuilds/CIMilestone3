@@ -79,3 +79,20 @@ class Session(models.Model):
     def __str__(self):
         activity_name = self.activity.activity_name if self.activity else "No Activity"
         return f"{activity_name} on {self.get_session_day_display()} starting at {self.start_time}"
+    
+
+    """
+    Tracking of past bookings information
+    """
+    class HistoricalBooking(models.Model):
+        user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+        historical_session = models.ForeignKey('HistoricalSession', on_delete=models.CASCADE)
+        number_of_people = models.IntegerField(default=1)
+        booking_date = models.DateTimeField()
+
+class HistoricalSession(models.Model):
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, null=True, blank=True)
+    session_day = models.CharField(max_length=10)
+    start_time = models.CharField(max_length=5)
+    total_booked = models.IntegerField(default=0)
+    reset_date = models.DateTimeField(auto_now_add=True)

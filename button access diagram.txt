@@ -1,0 +1,16 @@
++-------------------+---------------------+-----------------------------+
+| User Level        | Buttons Visible     | Actions Allowed             |
++-------------------+---------------------+-----------------------------+
+| Guest             | None                | View timetable only         |
+| (not signed in)   |                     |                             |
++-------------------+---------------------+-----------------------------+
+| Staff             | Add Activity        | Assign any activity (incl.  |
+| (signed in)       |                     | Lunch)                      |
+|                   |                     | Cannot remove activities     |
++-------------------+---------------------+-----------------------------+
+| Superuser/Admin   | Add Activity        | Assign any activity         |
+|                   | Remove Activity     | Remove any activity (incl.  |
+|                   |                     | Lunch)                      |
++-------------------+---------------------+-----------------------------+
+
+
