@@ -15,7 +15,7 @@ class Booking(models.Model):
         
     def clean(self):
         if self.session and self.number_of_people:
-            total_after_booking = (self.session.booked_number + self.number_of_people)
+            total_after_booking = (self.session.people_booked + self.number_of_people)
             if total_after_booking > self.session.activity.max_number:
                 raise ValidationError(f"Sorry, this session does not have enough space. {self.session.activity.max_number} people for this session.")
         
@@ -24,7 +24,7 @@ class Booking(models.Model):
         super().save(*args, **kwargs)
 
         # Update the booked number in the session
-        self.session.booked_number = (
+        self.session.people_booked = (
             self.session.booking_set.aggregate(total=models.Sum('number_of_people'))['total'] or 0
         )
         self.session.save()

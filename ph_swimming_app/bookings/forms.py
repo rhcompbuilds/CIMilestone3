@@ -5,7 +5,7 @@ from open_hours.models import Session
 class GuestBookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['first_name', 'last_name', 'email', 'number_of_people']
+        fields = ['caravan_number', 'first_name', 'last_name', 'email', 'number_of_people']
         exclude = ('session',)
 
 

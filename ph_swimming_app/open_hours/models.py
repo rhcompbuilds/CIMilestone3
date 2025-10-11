@@ -20,16 +20,18 @@ DURATION_CHOICE = [
 ]
  
 SESSION_CHOICE = [
-    ('09:00', '09:00'), ('10:00', '10:00'), ('11:00', '11:00'),
-    ('12:00', '12:00'), ('13:00', '13:00'), ('14:00', '14:00'), 
-    ('15:00', '15:00'), ('16:00', '16:00'),
+    ('09:00:00', '09:00:00'), ('10:00:00', '10:00:00'), ('11:00:00', '11:00:00'),
+    ('12:00:00', '12:00:00'), ('13:00:00', '13:00:00'), ('14:00:00', '14:00:00'), 
+    ('15:00:00', '15:00:00'), ('16:00:00', '16:00:00'),
 ]
+
+CLOSE_CHOICE = SESSION_CHOICE[1:] + [('17:00:00', '17:00:00')]
 
 class OpeningHour(models.Model):
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
-    open = models.CharField(max_length=5, choices=SESSION_CHOICE)
-    close = models.CharField(max_length=5, choices=SESSION_CHOICE)
-
+    open = models.CharField(max_length=8, choices=SESSION_CHOICE)
+    close = models.CharField(max_length=8, choices=CLOSE_CHOICE)
+    
     def __str__(self):
         return f"{self.day}: {self.open} - {self.close}"
 
@@ -50,7 +52,7 @@ class Activity(models.Model):
 class Session(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, null=True, blank=True)
     session_day = models.CharField(max_length=10, choices=DAY_CHOICES, default='Monday')
-    start_time = models.CharField(max_length=5, choices=SESSION_CHOICE)
+    start_time = models.CharField(max_length=8, choices=SESSION_CHOICE)
     
     @property
     def people_booked(self):

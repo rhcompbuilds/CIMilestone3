@@ -14,7 +14,7 @@
     <title>{% block title %}Online Bookings App{% endblock %}</title>
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     
 </head>
 <body>
@@ -22,46 +22,83 @@
         <h1>Swimming Bookings App</h1>
     </header>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand">  </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" {% if request.path == home_url %} active{% endif %} aria-current="page" href="{{ home_url }}">Home</a>
+    <div class="container-fluid">
+        <a class="navbar-brand"> </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+    
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link{% if request.path == home_url %} active{% endif %}" aria-current="page" href="{{ home_url }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if request.path == bookings_url %} active{% endif %}" aria-current="page" href="{% url 'booking_home' %}">Bookings</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto"> 
+                
+                {% if user.is_staff %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="staffDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Staff Menu
+                        </a>
+                        
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="staffDropdown">
+                            
+                            <h6 class="dropdown-header">Schedule Management</h6>
+                            <a class="dropdown-item" href="{% url 'admin_schedule' %}">
+                                🗓️ Schedule Editor
+                            </a>
+                            
+                            <div class="dropdown-divider"></div>
+
+                            <h6 class="dropdown-header">Booking Reports</h6>
+                            <a class="dropdown-item{% if request.path == staff_today_sessions %} active{% endif %}" href="{% url 'staff_today_sessions' %}">
+                                Bookings for Today
+                            </a>
+                            <a class="dropdown-item{% if request.path == staff_all_sessions %} active{% endif %}" href="{% url 'staff_all_sessions' %}">
+                                Weeks Bookings
+                            </a>
+                            
+                            {% if user.is_superuser %}
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin Site</a>
+                                
+                                <h6 class="dropdown-header text-danger">SUPERUSER DANGER ZONE</h6>
+                                
+                                <form method="post" action="{% url 'reset_bookings' %}" class="dropdown-item p-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger w-100 text-start" 
+                                            onclick="return confirm('WARNING! This will delete ALL current bookings and recreate open sessions. Are you absolutely sure?');">
+                                        🚨 Reset All Bookings
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" {% if request.path == bookings_url %} active{% endif %} aria-current="page" href="{% url 'booking_home' %}">Bookings</a>
-                    </li>
-                     {% if user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link" {% if request.path == staff_today_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_today_sessions' %}">Bookings for Today</a>
-                    </li>
-                         {% endif %}
-                     {% if user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link" {% if request.path == staff_all_sessions %} active {% endif %} aria-current="page" href="{% url 'staff_all_sessions' %}">Weeks Bookings</a>
-                    </li>
-                         {% endif %}             
+                {% endif %} <li class="nav-item">
                     {% if request.user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == logout_url %}active{% endif %}" aria-current="page" href="{% url 'account_logout' %}">Logout</a>
-                        </li>
+                        <a class="nav-link {% if request.path == logout_url %}active{% endif %}" aria-current="page" href="{% url 'account_logout' %}">
+                            Logout ({{ user.username }})
+                        </a>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == login_url %}active{% endif %}" aria-current="page" href="{% url 'account_login' %}">Login</a>
-                        </li>
+                        <a class="nav-link {% if request.path == login_url %}active{% endif %}" aria-current="page" href="{% url 'account_login' %}">
+                            Staff Login
+                        </a>
                     {% endif %}
-                </ul>
-            </div>
+                </li>
+            </ul>
         </div>
-    </nav>
+    </div>
+</nav>
+
     <div class="image-placement">
     <main class="main-content">
         {% block content %}
-        <!-- Content will be injected here by child templates -->
+        
         {% endblock %}
     </main>
     </div>
@@ -73,7 +110,7 @@
     </footer>
         
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" 
-        xintegrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
     </script>
     {% block extra_js %}
     {% endblock %}

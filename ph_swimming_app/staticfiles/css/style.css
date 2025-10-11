@@ -1,172 +1,282 @@
-body { 
-    font-family: sans-serif; 
-    margin: 20px; 
-    
+body {
+font-family: sans-serif;
+margin: 20px;
 }
 
+/* Background + header */
 .image-placement {
-    background-image: url('../images/swimming.png');
-    background-size: cover;
-    background-attachment: fixed;
+background-image: url('../images/swimming.png');
+background-size: cover;
+background-attachment: fixed;
 }
 
-.timetable-header { 
-    height: 60px;
-    background-image: url('../images/banner2.jpg');
-    background-size: fill;
-    color: black;
-    
-}   
-
-.timetable { 
-    width: 100%; 
-    border-collapse: collapse;    
-    font-weight: 700;
+.timetable-header {
+height: 60px;
+background-image: url('../images/banner2.jpg');
+background-size: cover;
+color: black;
+text-align: center;
+font-weight: bold;
 }
 
-.timetable th, .timetable td { 
-    border: 1px solid #470de4; 
-    padding: 10px; 
-    text-align: center; 
+/* Timetable table styling */
+.timetable {
+width: 100%;
+border-collapse: collapse;
+font-weight: 700;
 }
 
-.timetable th { 
-    background-color: #f2f2f2; 
+.timetable th,
+.timetable td {
+border: 1px solid #470de4;
+padding: 10px;
+text-align: center;
 }
 
+.timetable th {
+background-color: #f2f2f2;
+}
+
+/* Lunch slot styling */
 .lunch-row {
-  background-color: #e0e0e0;
-  color: #666;
+background-color: #e0e0e0;
+color: #666;
 }
 
 .lunch-row button {
-  display: none;
+display: none;
 }
 
 .lunch-row td {
-  pointer-events: none;
+pointer-events: none;
 }
 
-.message-container { 
-    margin-bottom: 20px; 
+/* Messages */
+.message-container {
+margin-bottom: 20px;
 }
 
-.success-message { 
-    color: green; 
+.success-message {
+color: green;
 }
 
-.error-message { 
-    color: red; 
+.error-message {
+color: red;
 }
 
-.day-header { 
-    font-weight: bold; 
-    background-color: #f9f9f9; 
+/* Navigation + layout */
+.day-header {
+font-weight: bold;
+background-color: #f9f9f9;
 }
 
 .day-page {
-    margin-bottom: 40px;
-}
-
-.navigation button {
-    padding: 10px 20px;
-    margin: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-/* Modal styles */
-.modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1000; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4); 
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; 
-    padding: 20px;
-    border: 1px solid #888;
-    width: 300px; 
-    border-radius: 5px;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover, .close:focus {
-    color: black;
-    text-decoration: none;
+margin-bottom: 40px;
 }
 
 .navigation {
-    text-align: center;
-    margin-top: 20px;
-    align-items: center;
+text-align: center;
+margin-top: 20px;
+align-items: center;
 }
 
+.navigation button {
+padding: 10px 20px;
+margin: 5px;
+font-size: 1rem;
+cursor: pointer;
+}
+
+/* Activity grid cards */
 .activity-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+gap: 1rem;
 }
 
 .activity-card {
-  border: 2px solid #ccc;
-  border-radius: 12px;
-  overflow: hidden;
-  text-align: center;
-  transition: 0.3s;
+border: 2px solid #ccc;
+border-radius: 12px;
+overflow: hidden;
+text-align: center;
+transition: 0.3s;
 }
 
-.activity-card img, .activity-card .placeholder {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  display: block;
+.activity-card img,
+.activity-card .placeholder {
+width: 100%;
+height: 150px;
+object-fit: cover;
+display: block;
 }
 
 .activity-card:hover {
-  border-color: #007bff;
-  transform: scale(1.05);
+border-color: #007bff;
+transform: scale(1.05);
 }
 
 .placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #f0f0f0;
-  font-weight: bold;
+display: flex;
+justify-content: center;
+align-items: center;
+background: #f0f0f0;
+font-weight: bold;
 }
 
+/* Booking + availability indicators */
 .fully-booked {
-    color: red;
-    font-weight: bold;
+color: red;
+font-weight: bold;
 }
 
 .fully-booked-item {
-    opacity: 0.7;
-    background-color: #f2f2f2;
+opacity: 0.7;
+background-color: #f2f2f2;
 }
 
+/* --- Scheduler layout --- */
+.scheduler-container {
+display: flex;
+gap: 20px;
+flex-wrap: wrap;
+}
 
+.activity-panel {
+width: 250px;
+background: #f9f9f9;
+padding: 1rem;
+border-radius: 10px;
+}
+
+.activity-item {
+padding: 8px;
+margin: 5px 0;
+background: #007bff;
+color: #fff;
+border-radius: 6px;
+cursor: grab;
+text-align: center;
+}
+
+.timetable-panel {
+flex: 1;
+min-width: 600px;
+}
+
+.timetable-grid {
+display: grid;
+grid-template-columns: 100px repeat(7, 1fr);
+border: 1px solid #ccc;
+grid-auto-rows: minmax(60px, auto);
+}
+
+.time-slot {
+border: 1px solid #ddd;
+height: 60px;
+text-align: center;
+transition: background-color 0.2s ease;
+}
+
+/* Drag-and-drop visuals */
+.dragging {
+opacity: 0.5;
+}
+
+.drag-over {
+background-color: #e6f7ff;
+border: 2px dashed #007bff;
+}
+
+.occupied {
+background-color: #ffcdd2;
+}
+
+.locked-slot {
+background-color: #ffeeba;
+pointer-events: none;
+color: #888;
+}
+
+.time-slot:has(.session-card) {
+    height: auto; 
+    align-items: stretch; 
+    overflow: visible; 
+}
+
+.session-card {
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    grid-row-end: span var(--session-span, 1);
+    width: 100%;
+    height: 100%;
+    background-color: #3498db;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: move;
+}
+
+.time-slot:has(.session-card[data-duration-hours="2"]) {
+    grid-row-end: span 2;
+}
+
+.time-slot:has(.session-card[data-duration-hours="3"]) {
+    grid-row-end: span 3;
+}
+
+.time-slot:has(.session-card[data-duration-hours="4"]) {
+    grid-row-end: span 4;
+}
+
+/* Modal styling */
+.modal {
+display: none;
+position: fixed;
+z-index: 1000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+background-color: #fefefe;
+margin: 15% auto;
+padding: 20px;
+border: 1px solid #888;
+width: 300px;
+border-radius: 5px;
+}
+
+.close {
+color: #aaa;
+float: right;
+font-size: 28px;
+font-weight: bold;
+cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+color: black;
+text-decoration: none;
+}
+
+/* Mobile responsive tweaks */
 @media screen and (max-width: 600px) {
-    .activity-grid {
-        grid-template-columns:subgrid;
-    }
-    .timetable th, .timetable td {
-        font-size: 0.9rem;
-        grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));
-    }
+.activity-grid {
+grid-template-columns: subgrid;
+}
+.timetable th,
+.timetable td {
+font-size: 0.9rem;
+}
+.scheduler-container {
+flex-direction: column;
+}
+.timetable-grid {
+grid-template-columns: 80px repeat(7, 1fr);
+}
 }
