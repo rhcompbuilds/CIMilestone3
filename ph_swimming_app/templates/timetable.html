@@ -23,7 +23,7 @@
             {% for time, _ in session_choices %}
             {% with session=day_slots|get_item:time %}
             <tr {% if session.activity and session.activity.activity_name == 'Lunch' %}class="lunch-row"{% endif %}>
-                <td>{{ time }}</td>
+                <td data-time="{{ time|time:'H:i' }}">
                 <td data-time="{{ time }}">
                     {% if session.activity %}
                         {{ session.activity.activity_name }}
